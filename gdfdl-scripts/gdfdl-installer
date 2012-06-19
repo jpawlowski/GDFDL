@@ -121,7 +121,7 @@ fi
 
 # Check for existing installation
 #
-if [ -f ${GDFDL_INSTALLNAME,,}.sh && -d ${GDFDL_INSTALLDIR} ];
+if [[ -f ${GDFDL_INSTALLNAME,,}.sh && -d ${GDFDL_INSTALLDIR} ]];
 then
         echo "Existing installation found. Please run './${GDFDL_INSTALLNAME,,}.sh uninstall' first. Aborting ..."
         exit 1
