@@ -1,0 +1,66 @@
+#!/bin/bash
+#
+# GDFDL - A Development Framework for Debian live-build
+# Push local changes into remote Git
+#
+# Copyright (c) 2012, Julian Pawlowski <jp@jps-networks.eu>
+# See LICENSE file for details.
+#
+
+source /conf
+[ -f /conf-custom ] && source /conf-custom
+cd ${GDFDL_DIR}
+
+# Show help message
+#
+if [[ $1 == "--help" || $1 == "-h" || $1 == "help" ]];
+then
+	echo "
+    ${GDFDL_BRANDNAME^^} BUILD ENVIRONMENT
+    Usage: `basename "$0"` [OPTION]
+	
+    Upload local changes into remote Git repository.
+
+    Options:
+      - no options available -
+"
+	exit 0
+fi
+
+# Setup Git user credentials for login
+#
+if [ ! -z "${GIT_USER}" -a ! -z "${GIT_PASSWORD}" ]
+then
+	GIT_URL=`git remote show origin | grep Push | cut -d " " -f 6`
+	# extract the protocol
+	GIT_PROTO="$(echo ${GIT_URL} | grep :// | sed -e's,^\(.*://\).*,\1,g')"
+	# remove the protocol
+	GIT_URL="$(echo ${GIT_URL/$GIT_PROTO/})"
+	# extract the user (if any)
+	GIT_USER="$(echo ${GIT_URL} | grep @ | cut -d@ -f1)"
+	# extract the host
+	GIT_HOST="$(echo ${GIT_URL/$GIT_USER@/} | cut -d/ -f1)"
+	echo "Git credentials for host '${GIT_HOST}' found!"
+	
+echo "machine ${GIT_HOST}
+  login ${GIT_USER}
+  password ${GIT_PASSWORD}
+" >  ~/.netrc
+else
+    echo -e "ERROR: Please set GDFDL_GIT_USER_NAME and GDFDL_GIT_USER_EMAIL as your\nreal name and email address in /conf-custom first."
+    exit 1
+fi
+
+# Do pull update first
+#
+gdfdl-scripts/gdfdl-update
+
+# Do Git stuff
+#
+git push
+
+# Remove temporal Git credential store
+#
+rm -rf ~/.netrc
+
+cd - >/dev/null

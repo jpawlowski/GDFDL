@@ -1,0 +1,15 @@
+.stage/
+binary.list
+binary.packages
+binary/
+cache/
+chroot/
+auto/
+config/
+local/
+.build/
+iso/
+.DS_Store
+*.log
+*.iso
+*.md5

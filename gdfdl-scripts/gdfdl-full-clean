@@ -1,0 +1,34 @@
+#!/bin/bash
+#
+# GDFDL - A Development Framework for Debian live-build
+# Cleanup GRE with ISO file deletion
+#
+# Copyright (c) 2012, Julian Pawlowski <jp@jps-networks.eu>
+# See LICENSE file for details.
+#
+
+source /conf
+[ -f /conf-custom ] && source /conf-custom
+
+# Show help message
+#
+if [[ $1 == "--help" || $1 == "-h" || $1 == "help" ]];
+then
+	echo "
+    ${GDFDL_BRANDNAME^^} BUILD ENVIRONMENT
+    Usage: `basename "$0"` [OPTION]
+	
+    Cleanup build environment including ISO files.
+
+    Options:
+      - no options available -
+"
+	exit 0
+fi
+
+# do normal cleanup first
+${GDFDL_SCRIPTS}/clean
+
+echo -n "Deleting already created ISO files, logfiles and caches ... "
+rm -rf /iso ${GDFDL_DIR}/cache
+echo "ok"

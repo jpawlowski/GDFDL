@@ -1,0 +1,223 @@
+#!/bin/bash
+#
+# GDFDL - A Development Framework for Debian live-build
+# Main entry script for GDFDL
+#
+# Copyright (c) 2012, Julian Pawlowski <jp@jps-networks.eu>
+# See LICENSE file for details.
+#
+
+set -e
+
+# Do not run this script directly.
+#
+if [[ x${GDFDL_DIR} == x"" ]]
+then
+echo "ERROR: Do not run this script directly. Aborting ..."
+	exit 1
+fi
+
+# Settings
+#
+BIN_CHROOT="/usr/sbin/chroot"
+BIN_DEBOOTSTRAP="/usr/sbin/debootstrap"
+BIN_MOUNT="/bin/mount"
+BIN_UMOUNT="/bin/umount"
+
+# Check for sudo and chroot on host system
+#
+if [[ ! -f "${BIN_CHROOT}" || ! -f "/usr/bin/sudo" ]];
+then
+	echo "Please re-install sudo and chroot first (they once where there!). Aborting ..."
+	exit 1
+fi
+
+# Check for root rights
+#
+if [[ ${EUID} -ne 0 ]];
+then
+	if [[ `sudo -l ${BIN_CHROOT} --version 2>&1 >/dev/null` || `sudo -l ${BIN_MOUNT} -o bind /dev ${GDFDL_BASEDIR}/dev 2>&1 >/dev/null` || `sudo -l ${BIN_UMOUNT} ${GDFDL_BASEDIR}/dev 2>&1 >/dev/null` ]];
+	then
+		echo "
+Cmnd_Alias GDFDL_CHROOT = ${BIN_CHROOT} ${HOME}/*
+Cmnd_Alias GDFDL_DEBOOTSTRAP = ${BIN_DEBOOTSTRAP}
+Cmnd_Alias GDFDL_UMOUNT = /bin/umount ${HOME}/*
+Cmnd_Alias GDFDL_MOUNT =  /bin/mount -o bind /dev ${HOME}/*, /bin/mount -o bind /sys ${HOME}/*, /bin/mount -o bind /proc ${HOME}/*
+Cmnd_Alias GDFDL_CMNDS = GDFDL_CHROOT,GDFDL_DEBOOTSTRAP,GDFDL_UMOUNT,GDFDL_MOUNT
+
+`whoami` ALL= NOPASSWD: GDFDL_CMNDS" > ./${GDFDL_BRANDNAME,,}_sudo
+
+		 echo "
+YOUR SUDO CONFIGURATION HAS CHANGED UNEXPECTEDLY.
+
+This build environment requires to run `basename ${BIN_CHROOT}` command
+which implicits root privileges. It uses Sudo to fulfill that requirement.
+
+After installation your user was allowed to execute chroot in the required manner.
+However somehow it seems the sudo configuration was changed so that this
+build environment cannot be used anymore.
+To resolve this, a file '${GDFDL_BRANDNAME,,}_sudo' has been created.
+Please move this file to /etc/sudoers.d/${GDFDL_BRANDNAME,,} as followed:
+
+ mv ${GDFDL_BRANDNAME,,}_sudo /etc/sudoers.d/${GDFDL_BRANDNAME,,}
+ chown root.root /etc/sudoers.d/${GDFDL_BRANDNAME,,}
+ chmod 0440 /etc/sudoers.d/${GDFDL_BRANDNAME,,}
+
+After you have finished this you may use the build environment again.
+
+NOTE:
+If you are not allowed to access directory /etc/sudoers.d, contact your administrator.
+We recommend to run this build environment on a dedicated build machine,
+for instance a separate virtual machine (via VMware, KVM, OpenVZ, whatever) where you can
+grant root privileges via sudo to the installer with no worries.
+"
+		exit 1
+	else
+		BIN_CHROOT="sudo ${BIN_CHROOT}"
+		BIN_MOUNT="sudo ${BIN_MOUNT}"
+		BIN_UMOUNT="sudo ${BIN_UMOUNT}"
+	fi
+fi
+
+# Show help message
+#
+if [[ $1 == "--help" || $1 == "-h" || $1 == "help" ]];
+then
+	echo "
+ ${GDFDL_BRANDNAME^^} BUILD ENVIRONMENT
+ Usage: `basename "$0"` [FUNCTION]
+
+ Normal functions:
+   help                     Print this help.
+   build                    Start building ISO file.
+   show                     Show currently available ISO files.
+   clean                    Cleanup build environment, keep ISO files.
+   full-clean               Cleanup build environment including ISO files.
+   update                   Update to latest version from Git.
+   uninstall                Remove build environment from your disk.
+
+ Debug and Development functions:
+   chroot                   Enter build environment.
+   chroot-iso               Enter ISO file chroot environment after build.
+   git-commit               Commit changes into local Git repository.
+   git-push                 Upload local changes into remote Git repository.
+
+ Add 'help' as additional parameter to each function to get help
+ about optional parameters for it.
+
+ Successfully built ISO files and their logs can be found in
+ ${GDFDL_BASEDIR}/iso/
+
+${GDFDL_BRANDINFO}
+"
+	exit 0
+fi
+
+# Uninstall GDFDL
+#
+if [[ $1 == "uninstall" ]];
+then
+	echo -n "Removing ${GDFDL_BRANDNAME} Build Environment ... "
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/sys`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/sys
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/proc`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/proc
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/sys`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/sys
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/proc`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/proc
+	${BIN_CHROOT} ${GDFDL_BASEDIR} chmod 777 /
+	${BIN_CHROOT} ${GDFDL_BASEDIR} chmod -R 777 ${GDFDL_DIR}
+	${BIN_CHROOT} ${GDFDL_BASEDIR} rm -rf /*
+	rm -rf ${GDFDL_BASEDIR} ${0}
+	echo "ok"
+	exit
+fi
+
+# Show currently available ISO and related files
+#
+if [[ $1 == "show" ]];
+then
+	if [ -d ${GDFDL_BASEDIR}/iso ];
+	then
+		echo -e "The following ISO files are currently available in ./${GDFDL_BASEDIR}/iso/:\n"
+		ls ${GDFDL_BASEDIR}/iso/ | sort
+	else
+		echo "No built ISO images found. Run '`basename "$0"` build' first."
+	fi
+	exit
+fi
+
+# Only handle known commands
+#
+if [[ $1 != "build" &&
+	$1 != "clean" &&
+	$1 != "full-clean" &&
+	$1 != "update" &&
+	$1 != "chroot" &&
+	$1 != "chroot-iso" &&
+	$1 != "git-commit" &&
+	$1 != "git-push" &&
+	x$1 != x ]];
+then
+	echo "ERROR: Unknown command option. Run '`basename "$0"` help' to see complete list of options."
+	exit 1
+elif [[ $# -eq 0 ]];
+then
+	echo "Missing command option. Run '`basename "$0"` help' to see complete list of options."
+	exit 1
+fi
+
+# Run autoupdate for GDFDL
+#
+if [[ "${GDFDL_AUTOUPDATE}" == "true" && $1 != "update" ]];
+then
+	${BIN_CHROOT} ${GDFDL_BASEDIR} ${GDFDL_SCRIPTS}/update --autoupdate 2>&1 >/dev/null
+fi
+
+# jump into chroot
+#
+
+if [[ $1 == "chroot-iso" ]];
+then
+	# Check if chroot from build phase exists
+	#
+	if [ ! -d ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot ];
+	then
+		echo "No chroot filesystem for ISO found. Run '`basename "$0"` build' first."
+		exit 1
+	fi
+
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev`" == "x" ]] && ${BIN_MOUNT} -o bind /dev ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/sys`" == "x" ]] && ${BIN_MOUNT} -o bind /sys ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/sys
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/proc`" == "x" ]] && ${BIN_MOUNT} -o bind /proc ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/proc
+
+	shift
+	chroot ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot "${@}"
+
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/sys`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/sys
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/proc`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/proc
+
+elif [[ $1 == "chroot" ]];
+then
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev`" == "x" ]] && ${BIN_MOUNT} -o bind /dev ${GDFDL_BASEDIR}/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/sys`" == "x" ]] && ${BIN_MOUNT} -o bind /sys ${GDFDL_BASEDIR}/sys
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/proc`" == "x" ]] && ${BIN_MOUNT} -o bind /proc ${GDFDL_BASEDIR}/proc
+
+	shift
+	${BIN_CHROOT} ${GDFDL_BASEDIR} "${@}"
+
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/sys`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/sys
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/proc`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/proc
+
+else
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev`" == "x" ]] && ${BIN_MOUNT} -o bind /dev ${GDFDL_BASEDIR}/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/sys`" == "x" ]] && ${BIN_MOUNT} -o bind /sys ${GDFDL_BASEDIR}/sys
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/proc`" == "x" ]] && ${BIN_MOUNT} -o bind /proc ${GDFDL_BASEDIR}/proc
+
+	${BIN_CHROOT} ${GDFDL_BASEDIR} ${GDFDL_SCRIPTS}/"${@}"
+
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/sys`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/sys
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/proc`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/proc
+fi

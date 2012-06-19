@@ -1,0 +1,52 @@
+#!/bin/bash
+#
+# GDFDL - A Development Framework for Debian live-build
+# Commit changes into local Git
+#
+# Copyright (c) 2012, Julian Pawlowski <jp@jps-networks.eu>
+# See LICENSE file for details.
+#
+
+source /conf
+[ -f /conf-custom ] && source /conf-custom
+source ${GDFDL_SCRIPTS}/gdfdl-functions
+cd ${GDFDL_DIR}
+
+# Show help message
+#
+if [[ $1 == "--help" || $1 == "-h" || $1 == "help" ]];
+then
+	echo "
+    ${GDFDL_BRANDNAME^^} BUILD ENVIRONMENT
+    Usage: `basename "$0"` [OPTION]
+	
+    Commit changes into local Git repository.
+
+    Options:
+      - no options available -
+"
+	exit 0
+fi
+
+# Set Git identidy settings
+#
+if [ -z "${GDFDL_GIT_USER_NAME}" -a -z "${GDFDL_GIT_USER_EMAIL}" ];
+then
+  echo -e "ERROR: Please set GDFDL_GIT_USER_NAME and GDFDL_GIT_USER_EMAIL as your\nreal name and email address in /conf-custom first."
+  exit 1
+fi
+git config user.name "${GDFDL_GIT_USER_NAME}"
+git config user.email "${GDFDL_GIT_USER_EMAIL}"
+
+# save local configuration
+#
+gdfdl_config_backup
+
+# do Git stuff
+git add --interactive
+git commit
+
+# restore local configuration
+gdfdl_config_restore
+
+cd - >/dev/null

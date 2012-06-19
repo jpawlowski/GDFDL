@@ -1,0 +1,24 @@
+#!/bin/sh
+#
+# GDFDL - A Development Framework for Debian live-build
+# live-build auto clean script
+#
+# Copyright (c) 2012, Julian Pawlowski <jp@jps-networks.eu>
+# See LICENSE file for details.
+#
+
+##
+# Don't change this file directly.
+# Add your custom tasks in separate file called 'clean-custom'
+# It will be included here automatically.
+##
+
+SELF="`readlink -f $0`"
+
+if [ -f `dirname ${SELF}`/clean-custom ];
+then
+	. `dirname ${SELF}`/clean-custom
+else
+	lb clean noauto "${@}"
+	rm -f config/binary config/bootstrap config/chroot config/common config/source
+fi

@@ -1,0 +1,249 @@
+#!/bin/bash
+#
+# GDFDL - A Development Framework for Debian live-build
+# Installer script
+#
+# Copyright (c) 2012, Julian Pawlowski <jp@jps-networks.eu>
+# See LICENSE file for details.
+#
+
+set -e
+
+# Set variables
+#
+[[ x$1 != x"" ]] && GDFDL_BRANCH=$1 || exit 1
+[[ x$2 != x"" ]] && GDFDL_INSTALL_URL=$2 || exit 1
+[[ x$3 != x"" ]] && GDFDL_GIT_URL=$3 || exit 1
+BIN_CHROOT="/usr/sbin/chroot"
+BIN_DEBOOTSTRAP="/usr/sbin/debootstrap"
+BIN_CURL="/usr/bin/curl"
+
+# Load configuration settings
+#
+GDFDL_CONF_URL="${GDFDL_INSTALL_URL}/gdfdl.conf"
+if [[ "`CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL -w "%{http_code}" "${GDFDL_CONF_URL}" -o /dev/null`" == "200"  ]]
+then
+	CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL "${GDFDL_CONF_URL}" > gdfdl.conf
+	source gdfdl.conf && rm gdfdl.conf
+else
+	echo -e "ERROR: Could not load configuration file from Git. /gdfdl.conf does not exist in Git. Aborting ..."
+	exit 1
+fi
+GDFDL_CONF_URL_CUSTOM="${GDFDL_INSTALL_URL}/gdfdl-custom.conf"
+if [[ "`CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL -w "%{http_code}" "${GDFDL_CONF_URL_CUSTOM}" -o /dev/null`" == "200"  ]]
+then
+	CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL "${GDFDL_CONF_URL_CUSTOM}" > gdfdl-custom.conf
+	source gdfdl-custom.conf && rm gdfdl-custom.conf
+fi
+
+# Load general functions
+#
+GDFDL_FUNCTIONS_URL="${GDFDL_INSTALL_URL}/gdfdl-scripts/gdfdl-functions"
+if [[ "`CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL -w "%{http_code}" "${GDFDL_FUNCTIONS_URL}" -o /dev/null`" == "200"  ]]
+then
+	CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL "${GDFDL_FUNCTIONS_URL}" > gdfdl-functions
+	source gdfdl-functions && rm gdfdl-functions
+else
+	echo -e "ERROR: Could not load functions file from Git. Aborting ..."
+	exit 1
+fi
+
+# Set install directory
+#
+[[ "${GDFDL_BRANCH}" == "master" ]] && GDFDL_INSTALLNAME=${GDFDL_BRANDNAME^^} || GDFDL_INSTALLNAME=${GDFDL_BRANDNAME^^}-${GDFDL_BRANCH}
+GDFDL_INSTALLDIR=`pwd`/${GDFDL_INSTALLNAME}
+
+GDFDL_SELF=`readlink -f $0`
+GDFDL_INSTALLDIR_ABSOLUTE="`dirname ${GDFDL_SELF}`/${GDFDL_INSTALLDIR}"
+
+# Check if run from inside of GDFDL
+#
+if [ -f /${GDFDL_BRANDNAME,,}_branch ];
+then
+	echo "This script cannot be run from within the build environment itself. Aborting ..."
+	exit 1
+fi
+
+echo -e "\n${GDFDL_BRANDNAME^^} BUILD ENVIRONMENT INSTALLATION\n"
+[[ "${GDFDL_BRANCH}" != "master" ]] && echo -e "- ${GDFDL_BRANCH} branch -\n"
+
+# Check for sudo, debootstrap and chroot on host system
+#
+if [[ ! -f "${BIN_CHROOT}" || ! -f "${BIN_DEBOOTSTRAP}" || ! -f "${BIN_CURL}" || ! -f "/usr/bin/sudo" ]];
+then
+        echo "Please install packages sudo, debootstrap, curl and chroot first. Aborting ..."
+        exit 1
+fi
+
+# Check for root rights
+#
+if [[ ${EUID} -ne 0 ]];
+then
+	if [[ `sudo -l ${BIN_CHROOT} --version 2>&1 >/dev/null` || `sudo -l ${BIN_DEBOOTSTRAP} --version 2>&1 >/dev/null` ]];
+	then
+		echo "
+Cmnd_Alias GDFDL_CHROOT = ${BIN_CHROOT} ${HOME}/*
+Cmnd_Alias GDFDL_DEBOOTSTRAP = ${BIN_DEBOOTSTRAP}
+Cmnd_Alias GDFDL_UMOUNT = /bin/umount ${HOME}/*
+Cmnd_Alias GDFDL_MOUNT =  /bin/mount -o bind /dev ${HOME}/*, /bin/mount -o bind /sys ${HOME}/*, /bin/mount -o bind /proc ${HOME}/*
+Cmnd_Alias GDFDL_CMNDS = GDFDL_CHROOT,GDFDL_DEBOOTSTRAP,GDFDL_UMOUNT,GDFDL_MOUNT
+
+`whoami` ALL= NOPASSWD: GDFDL_CMNDS" > ./${GDFDL_BRANDNAME,,}_sudo
+
+		 echo "
+YOU ARE RUNNING THE INSTALLATION WITH NON-ROOT PRIVILEGES.
+
+This build environment requires to run `basename ${BIN_DEBOOTSTRAP}`
+and `basename ${BIN_CHROOT}` commands which implicits root privileges.
+The installer will use Sudo to fulfill that requirement.
+
+To update your Sudo configuration, a file '/tmp/${GDFDL_BRANDNAME,,}_sudo' has been created.
+Please move this file to /etc/sudoers.d/${GDFDL_BRANDNAME,,} as followed:
+
+ mv /tmp/${GDFDL_BRANDNAME,,}_sudo /etc/sudoers.d/${GDFDL_BRANDNAME,,}
+ chown root.root /etc/sudoers.d/${GDFDL_BRANDNAME,,}
+ chmod 0440 /etc/sudoers.d/${GDFDL_BRANDNAME,,}
+
+After you have finished this you may run the installer again.
+
+NOTE:
+If you are not allowed to access directory /etc/sudoers.d, contact your administrator.
+We recommend to run this build environment on a dedicated build machine,
+for instance a separate virtual machine (via VMware, KVM, OpenVZ, whatever) where you can
+grant root privileges via sudo to the installer with no worries.
+"
+		exit 1
+	else
+		BIN_CHROOT="sudo ${BIN_CHROOT}"
+		BIN_DEBOOTSTRAP="sudo ${BIN_DEBOOTSTRAP}"
+	fi
+fi
+
+# Check for existing installation
+#
+if [ -f ${GDFDL_INSTALLNAME,,}.sh && -d ${GDFDL_INSTALLDIR} ];
+then
+        echo "Existing installation found. Please run './${GDFDL_INSTALLNAME,,}.sh uninstall' first. Aborting ..."
+        exit 1
+fi
+
+# Check for existing directory
+#
+if [ -d ${GDFDL_INSTALLDIR} ];
+then
+        echo "Supposed installation directory ${GDFDL_INSTALLDIR}/ already exists. Aborting ..."
+        exit 1
+fi
+
+# Check needed version of Debian Live based on distribution
+#
+gdfdl_set_debianlive_version
+
+# Creating chroot environment
+#
+echo "Creating Debian Live ${GDFDL_DEBIANLIVE_VERSION} chroot environment in ${GDFDL_INSTALLDIR}, this will take a while ..."
+if [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v2" ]]
+then
+	GDFLD_INSTALLBASEDIST="squeeze"
+elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v3" ]]
+then
+	GDFLD_INSTALLBASEDIST="sid"
+else
+	echo "ERROR: Unsupported Debian Live version. Aborting ..."
+	exit 1
+fi
+
+${BIN_DEBOOTSTRAP} --exclude dhcp3-server,dhcp3-server-ldap,isc-dhcp-client,isc-dhcp-common "${GDFLD_INSTALLBASEDIST}" "${GDFDL_INSTALLDIR}" http://cdn.debian.net/debian/ 2>&1 >/dev/null
+echo "deb http://live.debian.net/debian/ ${GDFLD_INSTALLBASEDIST}-snapshots main contrib non-free" | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tee -a "/etc/apt/sources.list" 2>&1 >/dev/null
+echo "deb-src http://live.debian.net/debian/ ${GDFLD_INSTALLBASEDIST}-snapshots main contrib non-free" | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tee -a "/etc/apt/sources.list" 2>&1 >/dev/null
+${BIN_CURL} -sL "${GDFDL_CONF_URL}" http://live.debian.net/debian/project/keys/archive-key.asc | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" apt-key add - 2>&1 >/dev/null
+${BIN_CHROOT} "${GDFDL_INSTALLDIR}" apt-get update 2>&1 >/dev/null
+${BIN_CHROOT} "${GDFDL_INSTALLDIR}" apt-get -y --force-yes install -qq \
+	live-build \
+	make \
+	dosfstools \
+	genisoimage \
+	memtest86+ \
+	mtools \
+	parted \
+	squashfs-tools \
+	genext2fs \
+	mtd-tools \
+	sudo \
+	fakeroot \
+	uuid-runtime \
+	win32-loader \
+	syslinux \
+	syslinux-themes-debian \
+	syslinux-themes-debian-squeeze \
+	locales \
+	git \
+	md5deep \
+		2>&1 >/dev/null
+
+# Get GDFDL from Git
+#
+echo "Cloning from Git ..."
+date +%s | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tee "/updatestatus" 2>&1 >/dev/null
+${BIN_CHROOT} "${GDFDL_INSTALLDIR}" git clone -b "${GDFDL_BRANCH}" "${GDFDL_GIT_URL}" "${GDFDL_DIR}" 2>&1 >/dev/null
+${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf /iso "${GDFDL_DIR}/iso"
+
+# Link Debian Live directories from Git
+#
+if [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v2" ]]
+then
+	${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf auto.v2 "${GDFDL_DIR}/auto"
+	${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf config.v2 "${GDFDL_DIR}/config"
+elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v3" ]]
+then
+	${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf auto.v3 "${GDFDL_DIR}/auto"
+	${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf config.v3 "${GDFDL_DIR}/config"
+fi
+
+# Adjusting environment settings
+#
+echo "LANG=en_US.UTF-8" | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tee -a "/etc/default/locale" 2>&1 >/dev/null
+echo "en_US.UTF-8 UTF-8" | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tee -a "/etc/locale.gen" 2>&1 >/dev/null
+${BIN_CHROOT} "${GDFDL_INSTALLDIR}" locale-gen 2>&1 >/dev/null
+
+${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf "`echo ${GDFDL_DIR} | cut -c2-`/gdfdl.conf" "/conf"
+[ -f "${GDFDL_INSTALLDIR}${GDFDL_DIR}/gdfdl-custom.conf" ] && ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf "`echo ${GDFDL_DIR} | cut -c2-`/gdfdl-custom.conf" "/conf-custom"
+echo "PATH=${GDFDL_SCRIPTS}:\$PATH" | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tee -a "/root/.bashrc" 2>&1 >/dev/null
+echo "PS1=(${GDFDL_INSTALLNAME})\$PS1" | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tee -a "/root/.bashrc" 2>&1 >/dev/null
+echo "cd ${GDFDL_DIR}" | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tee -a "/root/.bashrc" 2>&1 >/dev/null
+
+echo "${GDFDL_DEBIANLIVE_VERSION}" | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tee "/${GDFDL_BRANDNAME,,}_dlversion" 2>&1 >/dev/null
+echo "${GDFDL_BRANCH}" | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tee "/${GDFDL_BRANDNAME,,}_branch" 2>&1 >/dev/null
+${BIN_CHROOT} "${GDFDL_INSTALLDIR}" mkdir /iso
+${BIN_CHROOT} "${GDFDL_INSTALLDIR}" chmod 775 /iso
+
+# Take over timezone settings from host machine
+#
+if [ -f /etc/timezone ]; then
+	GDFDL_TIMEZONE=`cat /etc/timezone`
+	echo "${GDFDL_TIMEZONE}" | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tee "/etc/timezone" 2>&1 >/dev/null
+	if [ -f "${GDFDL_INSTALLDIR}/usr/share/zoneinfo/${GDFDL_TIMEZONE}" ]; then
+		${BIN_CHROOT} "${GDFDL_INSTALLDIR}" cp "/usr/share/zoneinfo/${GDFDL_TIMEZONE}" "/etc/localtime"
+	fi
+fi
+
+# Create wrapper for GDFDL entryscript
+#
+echo "GDFDL_SELF=\"\`readlink -f \$0\`\"
+GDFDL_BASEDIR=\"\`dirname \${GDFDL_SELF}\`/${GDFDL_INSTALLNAME}\"
+source \"\${GDFDL_BASEDIR}/conf\"
+[ -f \"\${GDFDL_BASEDIR}/conf-custom\" ] && source \"\${GDFDL_BASEDIR}/conf\"
+. \"\${GDFDL_BASEDIR}${GDFDL_SCRIPTS}/gdfdl-entryscript\"" > "${GDFDL_INSTALLNAME,,}.sh"
+chmod 755 "${GDFDL_INSTALLNAME,,}.sh"
+
+echo "
+  Installation successful.
+
+  Run './${GDFDL_INSTALLNAME,,}.sh build' to start building your ISO.
+  Run './${GDFDL_INSTALLNAME,,}.sh help' to get an overview of all commands.
+
+  You can find successfully built ISO's and their logfiles in
+  ${GDFDL_INSTALLDIR}/iso/
+
+${GDFDL_BRANDINFO}
+"

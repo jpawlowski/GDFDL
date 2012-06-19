@@ -1,0 +1,70 @@
+#!/bin/bash
+#
+# GDFDL - A Development Framework for Debian live-build
+# General functions
+#
+# Copyright (c) 2012, Julian Pawlowski <jp@jps-networks.eu>
+# See LICENSE file for details.
+#
+
+# backup local config and restore original from Git
+#
+function gdfdl_config_backup () {
+	cp -f ${GDFDL_DIR}/gdfdl.conf /tmp/gdfdl.conf
+	[ -f ${GDFDL_DIR}/gdfdl-custom.conf ] && cp -f ${GDFDL_DIR}/gdfdl-custom.conf /tmp/gdfdl-custom.conf
+	cd ${GDFDL_DIR}
+	git checkout ${GDFDL_DIR}/gdfdl.conf 2>&1 >/dev/null
+	[ -f ${GDFDL_DIR}/gdfdl-custom.conf ] && git checkout ${GDFDL_DIR}/gdfdl-custom.conf 2>&1 >/dev/null
+	cd - >/dev/null
+	return 0
+}
+
+# restore local config
+#
+function gdfdl_config_restore () {
+	mv -f /tmp/gdfdl.conf ${GDFDL_DIR}/gdfdl.conf
+	[ -f /tmp/gdfdl-custom.conf ] && mv -f /tmp/gdfdl-custom.conf {GDFDL_DIR}/gdfdl-custom.conf
+	return 0
+}
+
+# Calculate effective Debian Live version based on distribution
+#
+function gdfdl_set_debianlive_version () {
+	if [[
+		"${GDFDL_BASEDISTRIBUTION}" == "squeeze"
+		]]; then
+		GDFDL_DEBIANLIVE_VERSION="v2"
+		return 0
+	elif [[
+		"${GDFDL_BASEDISTRIBUTION}" == "wheezy" ||
+		"${GDFDL_BASEDISTRIBUTION}" == "precise"
+		 ]]; then
+ 		GDFDL_DEBIANLIVE_VERSION="v3"
+ 		return 0
+	else
+		echo "ERROR: Unsupported distribution. Aborting ..."
+		exit 1
+		return 1
+	fi
+}
+
+# Calculate effective Debian Live version based on distribution
+#
+function gdfdl_set_debianlive_basedistribution () {
+	if [[
+		"${GDFDL_BASEDISTRIBUTION}" == "squeeze" ||
+		"${GDFDL_BASEDISTRIBUTION}" == "wheezy"
+		]]; then
+		GDFDL_DEBIANLIVE_BASE="debian"
+		return 0
+	elif [[
+		"${GDFDL_BASEDISTRIBUTION}" == "precise"
+		 ]]; then
+ 		GDFDL_DEBIANLIVE_BASE="ubuntu"
+		return 0
+	else
+		echo "ERROR: Unsupported distribution. Aborting ..."
+		exit 1
+		return 1
+	fi
+}

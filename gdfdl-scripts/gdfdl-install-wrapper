@@ -1,0 +1,107 @@
+#!/bin/bash
+#
+# GDFDL - A Development Framework for Debian live-build
+# Installation wrapper script
+#
+# Copyright (c) 2012, Julian Pawlowski <jp@jps-networks.eu>
+# See LICENSE file for details.
+#
+
+########################################################
+# GDFDL installation wrapper
+#
+# To start the installation, run the following command from the client:
+# CURLOPT_SSL_VERIFYPEER=true curl -sL -o .tmp -w "URL=\"%{url_effective}\" bash .tmp \$@" <URL-to-this-wrapper-script> | bash [-s BRANCH]
+
+BIN_CURL="/usr/bin/curl"
+
+# Check if cURL has given us our own download
+# URL via ENV variable which we need to download our installer
+#
+if [[ x"${URL}" == x"" ]]
+then
+	echo "ERROR: Could not determine download URL for installer. Missing URL parameter. Aborting ..."
+	rm -rf `basename $0`
+	exit 1
+fi
+
+# Check for curl on host system
+#
+if [[ ! -f "${BIN_CURL}" ]];
+then
+        echo "Please install curl first. Aborting ..."
+        exit 1
+fi
+
+# Prove our own URL in case somebody has run this script without cURL
+#
+if [[ "`CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL -w "%{http_code}" "${URL}" -o /dev/null`" != "200"  ]]
+	then
+	echo "FATAL ERROR: Given URL seems to be incorrect. Aborting ..."
+	rm -rf `basename $0`
+	exit 1
+fi
+
+# Set branch
+#
+[[ x"$1" != x"" ]] && GDFDL_BRANCH="$1" || GDFDL_BRANCH="master"
+
+
+# extract the protocol
+GDFDL_GIT_PROTO="$(echo ${URL} | grep :// | sed -e's,^\(.*://\).*,\1,g')"
+# remove the protocol
+URL="$(echo ${URL/$GDFDL_GIT_PROTO/})"
+# extract the user (if any)
+GDFDL_GIT_USER="$(echo ${URL} | grep @ | cut -d@ -f1)"
+# extract the host
+GDFDL_GIT_HOST="$(echo ${URL/$GDFDL_GIT_USER@/} | cut -d/ -f1)"
+# extract the path (if any)
+GDFDL_GIT_PATH="$(echo ${URL} | grep / | cut -d/ -f2-)"
+[[ x${GDFDL_GIT_USER} != x"" ]] && GDFDL_GIT_USER="${GDFDL_GIT_USER}@"
+
+# GitHub branch handling
+#
+if [[ "${GDFDL_GIT_HOST}" == "raw.github.com" ]];
+then
+	GDFDL_GIT_PATH="`dirname /${GDFDL_GIT_PATH} | awk 'BEGIN{OFS=FS="/"}{$4="GDFDL_BRANCH_TMP"}{print}'`"
+	GDFDL_GIT_PATH="`echo ${GDFDL_GIT_PATH} | sed 's/\/GDFDL_BRANCH_TMP\//\/'"${GDFDL_BRANCH}"'\//g'`"
+	INSTALL_BASEURL="${GDFDL_GIT_PROTO}${GDFDL_GIT_USER}${GDFDL_GIT_HOST}`dirname ${GDFDL_GIT_PATH}`"
+	GDFDL_GIT_PATH="`dirname ${GDFDL_GIT_PATH}`"
+	INSTALL_GITURL="${GDFDL_GIT_PROTO}github.com`dirname ${GDFDL_GIT_PATH}`.git"
+
+# BitBucket branch handling
+#
+elif [[ "${GDFDL_GIT_HOST}" == "bitbucket.org" ]];
+then
+	GDFDL_GIT_PATH="`dirname /${GDFDL_GIT_PATH} | awk 'BEGIN{OFS=FS="/"}{$5="GDFDL_BRANCH_TMP"}{print}'`"
+	GDFDL_GIT_PATH="`echo ${GDFDL_GIT_PATH} | sed 's/\/GDFDL_BRANCH_TMP\//\/'"${GDFDL_BRANCH}"'\//g'`"
+	INSTALL_BASEURL="${GDFDL_GIT_PROTO}${GDFDL_GIT_USER}${GDFDL_GIT_HOST}`dirname ${GDFDL_GIT_PATH}`"
+	GDFDL_GIT_PATH="`dirname ${GDFDL_GIT_PATH}`"
+	GDFDL_GIT_PATH="`dirname ${GDFDL_GIT_PATH}`"
+	INSTALL_GITURL="${GDFDL_GIT_PROTO}bitbucket.org`dirname ${GDFDL_GIT_PATH}`.git"
+
+# Any other Git provider has limited support; because of unknown URL structure
+# we can only search for /master/ branch
+else
+	GDFDL_GIT_PATH="`dirname /${GDFDL_GIT_PATH} | sed 's/\/master\//\/'"${GDFDL_BRANCH}"'\//g'`"
+	INSTALL_BASEURL="${GDFDL_GIT_PROTO}${GDFDL_GIT_USER}${GDFDL_GIT_HOST}`dirname ${GDFDL_GIT_PATH}`"
+	INSTALL_GITURL="" #TODO <-- this is what we can't really create from the known raw-src base URL... :-(
+
+	echo "FATAL ERROR: Unsupported Git provider '${GDFDL_GIT_HOST}'. Sorry ..."
+	exit 1
+fi
+
+
+# Check for available install script
+#
+if [[ "`CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL -w "%{http_code}" "${INSTALL_BASEURL}/gdfdl-scripts/gdfdl-installer" -o /dev/null`" != "200"  ]]
+then
+	echo "ERROR: Unknown development branch '${GDFDL_BRANCH}' selected. Aborting ..."
+	rm -rf `basename $0`
+	exit 1
+else
+	# Load installer
+	echo "Loading installer ..."
+	CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL "${INSTALL_BASEURL}/gdfdl-scripts/gdfdl-installer" | bash -s "${GDFDL_BRANCH}" "${INSTALL_BASEURL}" "${INSTALL_GITURL}"
+	rm -rf `basename $0`
+fi

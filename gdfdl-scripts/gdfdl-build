@@ -1,0 +1,159 @@
+#!/bin/bash
+#
+# GDFDL - A Development Framework for Debian live-build
+# Build control script
+#
+# Copyright (c) 2012, Julian Pawlowski <jp@jps-networks.eu>
+# See LICENSE file for details.
+#
+
+source /conf
+[ -f /conf-custom ] && source /conf-custom
+source ${GDFDL_SCRIPTS}/gdfdl-functions
+cd ${GDFDL_DIR}
+
+# Show help message
+#
+if [[ $1 == "--help" || $1 == "-h" || $1 == "help" ]];
+then
+	echo "
+    ${GDFDL_BRANDNAME^^} BUILD ENVIRONMENT
+    Usage: `basename "$0"` [OPTION]
+	
+    Start building ISO file.
+
+    Options:
+      --quiet                  Suppress normal status messages except errors
+"
+	exit 0
+fi
+
+# Check for existing lb configuration
+#
+if [[ ! -f ./auto/config || ! -d ./config || ! -f /conf ]];
+then
+	echo -e "\nLive Build configuration files could not be found.\nPlease reinstall Build Environment.\n"
+	exit 1
+fi
+
+DATETIME="$(date +%Y%m%d_%H%M%S)"
+FILENAME="${GDFDL_FILE_PREFIX}_${DATETIME}"
+
+# cleanup build environment from old stuff
+lb clean 2>&1 >/dev/null
+
+# Check if distribution is matching to local base installation
+# of Debian Live
+#
+gdfdl_set_debianlive_version
+if [[ "${GDFDL_DEBIANLIVE_VERSION}" != "`cat /${GDFDL_BRANDNAME,,}_dlversion`" ]]
+then
+	echo "
+FATAL ERROR: Change of Linux base distribution in conf file detected.
+This leads to another Debian Live base installation which does not match to the local version.
+Please re-install the Build Environment.
+
+If you are the developer, please make your distribution change permanent in the respective Git branch.
+You might want to open a separate branch to do so."
+	exit 1
+fi
+
+# update/recreate LB config files
+#
+gdfdl_set_debianlive_basedistribution
+
+if [[ "${GDFDL_DEBIANLIVE_BASE}" == "debian" ]]
+then
+
+	lb config \
+		--distribution ${GDFDL_BASEDISTRIBUTION} \
+		--archive-areas "main contrib non-free" \
+		--mode ${GDFDL_DEBIANLIVE_BASE} \
+	2>&1 >>./${FILENAME}.log
+
+elif [[ "${GDFDL_DEBIANLIVE_BASE}" == "ubuntu" ]]
+then
+
+	lb config \
+		--distribution ${GDFDL_BASEDISTRIBUTION} \
+		--archive-areas "main contrib non-free" \
+		--mode ${GDFDL_DEBIANLIVE_BASE} \
+	2>&1 >>./${FILENAME}.log
+
+else
+	echo "ERROR: Unsupported base distribution '${GDFDL_DEBIANLIVE_BASE}'. Aborting ..."
+	exit 1
+fi
+
+# write build information and copy current configuration into DB Live dir
+#
+if [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v2" ]]
+then
+	echo ${DATETIME} > ${GDFDL_DIR}/config.v2/chroot_local-includes/gdfdl_build
+	cp -f /conf ${GDFDL_DIR}/config.v2/chroot_local-includes/gdfdl.conf
+	[ -f /conf-custom ] && cp -f /conf-custom ${GDFDL_DIR}/config.v2/chroot_local-includes/gdfdl-custom.conf
+elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v3" ]]
+	then
+	echo ${DATETIME} > ${GDFDL_DIR}/config.v3/includes.chroot/gdfdl_build
+	cp -f /conf ${GDFDL_DIR}/config.v3/includes.chroot/gdfdl.conf
+	[ -f /conf-custom ] && cp -f /conf-custom ${GDFDL_DIR}/config.v3/chroot_local-includes/gdfdl-custom.conf
+else
+	echo "ERROR: Undefined Debain Live version. Aborting ..."
+	exit 1
+fi
+
+# start build procedure
+#
+[[ x"$1" != x"--quiet" ]] && echo -n "Building ISO, this will take a while. Please be patient ... "
+lb build 2>&1 >>./${FILENAME}.log
+
+# if there is a new ISO image, move and rename it
+if [ -f binary-hybrid.iso ];
+then
+	[[ x"$1" != x"--quiet" ]] && echo "ok"
+	[[ x"$1" != x"--quiet" ]] && echo -n "Moving files to deployment directory and updating symlinks ... "
+	mv binary-hybrid.iso /iso/${FILENAME}.iso
+	mv ${FILENAME}.log /iso/${FILENAME}.log
+	ln -snf ${FILENAME}.log /iso/${GDFDL_FILE_PREFIX}_latest.log
+	ln -snf ${FILENAME}.iso /iso/${GDFDL_FILE_PREFIX}_latest.iso
+	[[ x"$1" != x"--quiet" ]] && echo "ok"
+
+	rm -rf /iso/*.sign /iso/MD5SUMS /iso/SHA1SUMS /iso/SHA256SUMS
+
+	# generate checksums
+	[[ x"$1" != x"--quiet" ]] && echo -n "Generating checksum files ... "
+	md5deep -b /iso/*.iso > /iso/MD5SUMS
+	sha1deep -b /iso/*.iso > /iso/SHA1SUMS
+	sha256deep -b /iso/*.iso > /iso/SHA256SUMS
+	[[ x"$1" != x"--quiet" ]] && echo "ok"
+
+	# sign checksums if .gnupg files are present
+	if [ -d ~/.gnupg ];
+	then
+		[[ x"$1" != x"--quiet" ]] && echo -n "Signing checksum files ... "
+		if [ -f ~/.gnupg/passphrase ];
+		then
+			gpg --batch --passphrase-file ~/.gnupg/passphrase -sat /iso/MD5SUMS --output /iso/MD5SUMS.sign
+			gpg --batch --passphrase-file ~/.gnupg/passphrase -sat /iso/SHA1SUMS --output /iso/SHA1SUMS.sign
+			gpg --batch --passphrase-file ~/.gnupg/passphrase -sat /iso/SHA256SUMS --output /iso/SHA256SUMS.sign
+		else
+			gpg --batch -sat /iso/MD5SUMS --output /iso/MD5SUMS.sign
+			gpg --batch -sat /iso/SHA1SUMS --output /iso/SHA1SUMS.sign
+			gpg --batch -sat /iso/SHA256SUMS --output /iso/SHA256SUMS.sign
+		fi
+		[[ x"$1" != x"--quiet" ]] && echo "ok"
+	fi
+
+	# check for old images
+	[[ x"$1" != x"--quiet" ]] && echo -n "Removing files older than ${GDFDL_ARCHIVE_DAYS} day(s) from deployment directory ... "
+	find /iso -maxdepth 1 -name "${GDFDL_FILE_PREFIX}_*" -type f -mtime ${GDFDL_ARCHIVE_DAYS} -exec rm {} \;
+	[[ x"$1" != x"--quiet" ]] && echo "ok"
+	exit 0
+else
+	mv ${FILENAME}.log /iso/${FILENAME}_failed.log
+	echo "FAILED!"
+	echo -e "Session transcript can be found in ${FILENAME}_failed.log\n"
+	exit 1
+fi
+
+cd - >/dev/null

@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# GDFDL - A Development Framework for Debian live-build
+# Cleanup GDFDL
+#
+# Copyright (c) 2012, Julian Pawlowski <jp@jps-networks.eu>
+# See LICENSE file for details.
+#
+
+source /conf
+[ -f /conf-custom ] && source /conf-custom
+cd ${GDFDL_DIR}
+
+# Show help message
+#
+if [[ $1 == "--help" || $1 == "-h" || $1 == "help" ]];
+then
+	echo "
+    ${GDFDL_BRANDNAME^^} BUILD ENVIRONMENT
+    Usage: `basename "$0"` [OPTION]
+	
+    Cleanup build environment, keep ISO files.
+
+    Options:
+      - no options available -
+"
+	exit 0
+fi
+
+echo -n "Cleaning up Build Environment ..."
+lb clean 2>&1 >/dev/null
+rm -rf *.log
+echo "ok"
+
+cd - >/dev/null

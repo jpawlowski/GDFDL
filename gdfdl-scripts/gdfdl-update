@@ -1,0 +1,107 @@
+#!/bin/bash
+#
+# GDFDL - A Development Framework for Debian live-build
+# Update GDFDL to current Git status
+#
+# Copyright (c) 2012, Julian Pawlowski <jp@jps-networks.eu>
+# See LICENSE file for details.
+#
+
+source /conf
+[ -f /conf-custom ] && source /conf-custom
+source ${GDFDL_SCRIPTS}/gdfdl-functions
+cd ${GDFDL_DIR}
+
+# Show help message
+#
+if [[ $1 == "--help" || $1 == "-h" || $1 == "help" ]];
+then
+	echo "
+    ${GDFDL_BRANDNAME^^} BUILD ENVIRONMENT
+    Usage: `basename "$0"` [OPTION]
+	
+    Update to latest version from Git.
+
+    Options:
+      status                   Show time of last update run.
+      --autoupdate             Only run update if auto-update interval has been
+                               reached (implicits --quiet).
+      --force                  CAUTION! Reset local changes to master state
+                               (excludes reset of local configuration files).
+      --forceconfig            CAUTION! Overwrite local configuration with
+                               original version from master.
+      --quiet                  Suppress normal status messages except errors.
+"
+	exit 0
+fi
+
+if [ "$1" == "status" ];
+then
+	echo -n "Last update: "
+	date -d @`cat /updatestatus`
+	exit 0
+fi
+
+if [ "$1" == "--autoupdate" ];
+then
+	NOW=$(date +%s)
+	if [ -f /updatestatus ];
+		then
+		OLD=`cat /updatestatus`
+	else
+		OLD=0
+	fi
+	DIFF=$(( ${NOW} - ${OLD} ))
+	[[ ${DIFF} -le ${GDFDL_AUTOUPDATE_INTERVAL} ]] && exit 0
+	BE_QUIET="true"
+else
+	[[ x"$1" == x"--quiet" ]] && BE_QUIET="true"
+fi
+
+# Force update of local configuration and revert to version from master
+#
+if [ "$1" == "--forceconfig" ];
+then
+	echo -n "Reseting local configuration to original from master ... "
+	git checkout gdfdl.conf 2>&1 >/dev/null
+	[ -f gdfdl-custom.conf ] && git checkout gdfdl-custom.conf 2>&1 >/dev/null
+	echo "ok"
+	exit 0
+fi
+
+# save local configuration
+#
+gdfdl_config_backup
+
+[[ x"${BE_QUIET}" != x"true" ]] && echo -n "Updating Chroot environment ... "
+apt-get update 2>&1 >/dev/null
+apt-get -y --force-yes upgrade -qq 2>&1 >/dev/null
+[[ x"${BE_QUIET}" != x"true" ]] && echo "ok"
+
+if [ "$1" == "--force" ];
+then
+	[[ x"${BE_QUIET}" != x"true" ]] && echo -n "Reverting local changes ... "
+	git reset --quiet --hard HEAD >/dev/null
+	if [ "$?" -eq "0" ]; then
+		[[ x"${BE_QUIET}" != x"true" ]] && echo "ok"
+	else
+		echo "FAILED"
+		exit 1
+	fi
+fi
+
+[[ x"${BE_QUIET}" != x"true" ]] && echo -n "Updating to latest Git status ... "
+git pull --quiet 2>&1 >/dev/null
+if [ "$?" -eq "0" ]; then
+	[[ x"${BE_QUIET}" != x"true" ]] && echo "ok"
+	date +%s >/updatestatus
+else
+	echo -e "\nYou may want to run '`basename $0` --force' to revert local changes\nbefore updating or use git-commit and git-push to upload your changes first.\n"
+fi
+
+# restore local configuration
+#
+gdfdl_config_restore
+
+cd - >/dev/null
+

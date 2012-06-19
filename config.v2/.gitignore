@@ -1,0 +1,8 @@
+binary
+bootstrap
+chroot
+common
+source
+chroot_local-includes/etc/gdfdl_build
+chroot_local-includes/gdfdl.conf
+chroot_local-includes/gdfdl-custom.conf
