@@ -186,7 +186,7 @@ ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" apt-get -y --force-yes install -qq \
 echo "Cloning from Git ..."
 date +%s | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tee "/updatestatus" 2>&1 >/dev/null
 ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" git clone -b "${GDFDL_BRANCH}" "${GDFDL_GIT_URL}" "${GDFDL_DIR}" 2>&1 >/dev/null
-${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf /iso "${GDFDL_DIR}/iso"
+${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf ../iso "${GDFDL_DIR}/iso"
 
 # Link Debian Live directories from Git
 #
