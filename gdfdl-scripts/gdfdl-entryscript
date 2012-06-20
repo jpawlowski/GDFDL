@@ -34,50 +34,7 @@ fi
 
 # Check for root rights
 #
-if [[ ${EUID} -ne 0 ]];
-then
-	if [[ `sudo -l ${BIN_CHROOT} --version 2>&1 >/dev/null` || `sudo -l ${BIN_MOUNT} -o bind /dev ${GDFDL_BASEDIR}/dev 2>&1 >/dev/null` || `sudo -l ${BIN_UMOUNT} ${GDFDL_BASEDIR}/dev 2>&1 >/dev/null` ]];
-	then
-		echo "
-Cmnd_Alias GDFDL_CHROOT = ${BIN_CHROOT} ${HOME}/*
-Cmnd_Alias GDFDL_DEBOOTSTRAP = ${BIN_DEBOOTSTRAP}
-Cmnd_Alias GDFDL_UMOUNT = /bin/umount ${HOME}/*
-Cmnd_Alias GDFDL_MOUNT =  /bin/mount -o bind /dev ${HOME}/*, /bin/mount -o bind /sys ${HOME}/*, /bin/mount -o bind /proc ${HOME}/*
-Cmnd_Alias GDFDL_CMNDS = GDFDL_CHROOT,GDFDL_DEBOOTSTRAP,GDFDL_UMOUNT,GDFDL_MOUNT
-
-`whoami` ALL= NOPASSWD: GDFDL_CMNDS" > ./${GDFDL_BRANDNAME,,}_sudo
-
-		 echo "
-YOUR SUDO CONFIGURATION HAS CHANGED UNEXPECTEDLY.
-
-This build environment requires to run `basename ${BIN_CHROOT}` command
-which implicits root privileges. It uses Sudo to fulfill that requirement.
-
-After installation your user was allowed to execute chroot in the required manner.
-However somehow it seems the sudo configuration was changed so that this
-build environment cannot be used anymore.
-To resolve this, a file '${GDFDL_BRANDNAME,,}_sudo' has been created.
-Please move this file to /etc/sudoers.d/${GDFDL_BRANDNAME,,} as followed:
-
- mv ${GDFDL_BRANDNAME,,}_sudo /etc/sudoers.d/${GDFDL_BRANDNAME,,}
- chown root.root /etc/sudoers.d/${GDFDL_BRANDNAME,,}
- chmod 0440 /etc/sudoers.d/${GDFDL_BRANDNAME,,}
-
-After you have finished this you may use the build environment again.
-
-NOTE:
-If you are not allowed to access directory /etc/sudoers.d, contact your administrator.
-We recommend to run this build environment on a dedicated build machine,
-for instance a separate virtual machine (via VMware, KVM, OpenVZ, whatever) where you can
-grant root privileges via sudo to the installer with no worries.
-"
-		exit 1
-	else
-		BIN_CHROOT="sudo ${BIN_CHROOT}"
-		BIN_MOUNT="sudo ${BIN_MOUNT}"
-		BIN_UMOUNT="sudo ${BIN_UMOUNT}"
-	fi
-fi
+gdfdl_check_sudo
 
 # Show help message
 #
@@ -118,12 +75,15 @@ fi
 if [[ $1 == "uninstall" ]];
 then
 	echo -n "Removing ${GDFDL_BRANDNAME} Build Environment ... "
-	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev/pts`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/dev/pts
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/sys`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/sys
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/proc`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/proc
-	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev/pts`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev/pts
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/sys`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/sys
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/proc`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/proc
+
+	# we trick a bit here to allow uninstall via sudo for non-root
+	# users without allowing additional commands
 	${BIN_CHROOT} ${GDFDL_BASEDIR} chmod 777 /
 	${BIN_CHROOT} ${GDFDL_BASEDIR} chmod -R 777 ${GDFDL_DIR}
 	${BIN_CHROOT} ${GDFDL_BASEDIR} rm -rf /*
@@ -186,38 +146,38 @@ then
 		exit 1
 	fi
 
-	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev`" == "x" ]] && ${BIN_MOUNT} -o bind /dev ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev/pts`" == "x" ]] && ${BIN_MOUNT} -o bind /dev/pts ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev/pts
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/sys`" == "x" ]] && ${BIN_MOUNT} -o bind /sys ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/sys
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/proc`" == "x" ]] && ${BIN_MOUNT} -o bind /proc ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/proc
 
 	shift
 	chroot ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot "${@}"
 
-	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev/pts`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/dev/pts
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/sys`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/sys
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/proc`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/proc
 
 elif [[ $1 == "chroot" ]];
 then
-	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev`" == "x" ]] && ${BIN_MOUNT} -o bind /dev ${GDFDL_BASEDIR}/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev/pts`" == "x" ]] && ${BIN_MOUNT} -o bind /dev ${GDFDL_BASEDIR}/dev/pts
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/sys`" == "x" ]] && ${BIN_MOUNT} -o bind /sys ${GDFDL_BASEDIR}/sys
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/proc`" == "x" ]] && ${BIN_MOUNT} -o bind /proc ${GDFDL_BASEDIR}/proc
 
 	shift
 	${BIN_CHROOT} ${GDFDL_BASEDIR} "${@}"
 
-	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev/pts`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/dev/pts
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/sys`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/sys
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/proc`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/proc
 
 else
-	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev`" == "x" ]] && ${BIN_MOUNT} -o bind /dev ${GDFDL_BASEDIR}/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev/pts`" == "x" ]] && ${BIN_MOUNT} -o bind /dev ${GDFDL_BASEDIR}/dev/pts
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/sys`" == "x" ]] && ${BIN_MOUNT} -o bind /sys ${GDFDL_BASEDIR}/sys
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/proc`" == "x" ]] && ${BIN_MOUNT} -o bind /proc ${GDFDL_BASEDIR}/proc
 
 	${BIN_CHROOT} ${GDFDL_BASEDIR} ${GDFDL_SCRIPTS}/"${@}"
 
-	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/dev
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev/pts`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/dev/pts
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/sys`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/sys
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/proc`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/proc
 fi

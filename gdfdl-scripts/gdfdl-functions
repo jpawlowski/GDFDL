@@ -68,3 +68,60 @@ function gdfdl_set_debianlive_basedistribution () {
 		return 1
 	fi
 }
+
+# check for sufficient sudo rights for non-root users
+#
+function gdfdl_check_sudo () {
+	if [[ ${EUID} -ne 0 ]];
+		then
+		if [[ `sudo -l ${BIN_CHROOT} --version 2>&1 >/dev/null` ||
+			`sudo -l ${BIN_MOUNT} -o bind /sys ${GDFDL_BASEDIR}/sys 2>&1 >/dev/null` ||
+			`sudo -l ${BIN_MOUNT} -o bind /proc ${GDFDL_BASEDIR}/proc 2>&1 >/dev/null` ||
+			`sudo -l ${BIN_MOUNT} -o bind /dev/pts ${GDFDL_BASEDIR}/dev/pts 2>&1 >/dev/null` ||
+			`sudo -l ${BIN_UMOUNT} ${GDFDL_BASEDIR}/dev/pts 2>&1 >/dev/null` ]];
+			then
+			CURRENT_USER="`whoami`"
+			echo "
+Cmnd_Alias ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_CHROOT = ${BIN_CHROOT} ${GDFDL_BASEDIR}/*
+Cmnd_Alias ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_DEBOOTSTRAP = ${BIN_DEBOOTSTRAP}
+Cmnd_Alias ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_UMOUNT = ${BIN_UMOUNT} ${GDFDL_BASEDIR}/*
+Cmnd_Alias ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_MOUNT =  ${BIN_MOUNT} -o bind /dev/pts ${GDFDL_BASEDIR}/*, ${BIN_MOUNT} -o bind /sys ${GDFDL_BASEDIR}/*, ${BIN_MOUNT} -o bind /proc ${GDFDL_BASEDIR}/*
+Cmnd_Alias ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_CMNDS = ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_CHROOT,${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_DEBOOTSTRAP,${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_UMOUNT,${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_MOUNT
+
+${CURRENT_USER} ALL= NOPASSWD: ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_CMNDS" > /tmp/sudo_${CURRENT_USER,,}_${GDFDL_BRANDNAME,,}
+
+		 echo "
+YOU ARE RUNNING THIS SCRIPT WITH NON-ROOT PRIVILEGES.
+
+This build environment requires to run `basename ${BIN_DEBOOTSTRAP}`
+and `basename ${BIN_CHROOT}` commands which implicits root privileges.
+It uses Sudo to fulfill that requirement.
+
+To update your Sudo configuration, a file '/tmp/sudo_${GDFDL_BRANDNAME,,}_${CURRENT_USER,,}'
+with your individual configuration was created.
+Please move this file to /etc/sudoers.d/ as followed:
+
+ mv /tmp/sudo_${CURRENT_USER,,}_${GDFDL_BRANDNAME,,} /etc/sudoers.d/${CURRENT_USER,,}_${GDFDL_BRANDNAME,,}
+ chown root.root /etc/sudoers.d/${CURRENT_USER,,}_${GDFDL_BRANDNAME,,}
+ chmod 0440 /etc/sudoers.d/${CURRENT_USER,,}_${GDFDL_BRANDNAME,,}
+
+After you have finished this you may try again.
+
+NOTE:
+If you are not allowed to access directory /etc/sudoers.d, contact your administrator.
+We recommend to run this build environment on a dedicated build machine,
+for instance a separate virtual machine (via VMware, KVM, OpenVZ, whatever) where you can
+grant root privileges via sudo with no worries.
+"
+			exit 1
+			return 1
+		else
+			BIN_CHROOT="sudo ${BIN_CHROOT}"
+			BIN_MOUNT="sudo ${BIN_MOUNT}"
+			BIN_UMOUNT="sudo ${BIN_UMOUNT}"
+			return 0
+		fi
+	fi
+
+	return 0
+}
