@@ -24,6 +24,7 @@ then
 
     Options:
       --quiet                  Suppress normal status messages except errors
+      --verbose                Show build details from build subprocess
 "
 	exit 0
 fi
@@ -105,7 +106,12 @@ fi
 # start build procedure
 #
 [[ x"$1" != x"--quiet" ]] && echo -n "Building ISO, this will take a while. Please be patient ... "
-lb build 2>&1 >>./${FILENAME}.log
+if [[ x"$1" == x"--verbose" ]];
+then
+	lb build 2>&1 | tee ./${FILENAME}.log
+else
+	lb build 2>&1 >>./${FILENAME}.log
+fi
 
 # if there is a new ISO image, move and rename it
 if [ -f binary-hybrid.iso ];
