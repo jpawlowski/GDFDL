@@ -23,7 +23,7 @@ function gdfdl_config_backup () {
 #
 function gdfdl_config_restore () {
 	mv -f /tmp/gdfdl.conf ${GDFDL_DIR}/gdfdl.conf
-	[ -f /tmp/gdfdl-custom.conf ] && mv -f /tmp/gdfdl-custom.conf {GDFDL_DIR}/gdfdl-custom.conf
+	[ -f /tmp/gdfdl-custom.conf ] && mv -f /tmp/gdfdl-custom.conf ${GDFDL_DIR}/gdfdl-custom.conf
 	return 0
 }
 
