@@ -25,6 +25,7 @@ then
 	source gdfdl.conf && rm gdfdl.conf
 else
 	echo -e "ERROR: Could not load configuration file from Git. /gdfdl.conf does not exist in Git. Aborting ..."
+	rm -rf `basename $0`
 	exit 1
 fi
 GDFDL_CONF_URL_CUSTOM="${GDFDL_INSTALL_URL}/gdfdl-custom.conf"
@@ -43,6 +44,7 @@ then
 	source gdfdl-functions && rm gdfdl-functions
 else
 	echo -e "ERROR: Could not load functions file from Git. Aborting ..."
+	rm -rf `basename $0`
 	exit 1
 fi
 
@@ -56,6 +58,7 @@ GDFDL_INSTALLDIR=`pwd`/${GDFDL_INSTALLNAME}
 if [ -f "/${GDFDL_BRANDNAME,,}_branch" ];
 then
 	echo "This script cannot be run from within the build environment itself. Aborting ..."
+	rm -rf `basename $0`
 	exit 1
 fi
 
@@ -72,6 +75,7 @@ gdfdl_check_sudo
 if [[ ! -f "${BIN_CHROOT}" || ! -f "${BIN_DEBOOTSTRAP}" || ! -f "${BIN_CURL}" || ! -f "/usr/bin/sudo" ]];
 then
         echo "Please install packages sudo, debootstrap, curl and chroot first. Aborting ..."
+		rm -rf `basename $0`
         exit 1
 fi
 
@@ -80,6 +84,7 @@ fi
 if [[ -f ${GDFDL_INSTALLNAME,,}.sh && -d ${GDFDL_INSTALLDIR} ]];
 then
         echo "Existing installation found. Please run './${GDFDL_INSTALLNAME,,}.sh uninstall' first. Aborting ..."
+		rm -rf `basename $0`
         exit 1
 fi
 
@@ -88,6 +93,7 @@ fi
 if [ -d ${GDFDL_INSTALLDIR} ];
 then
         echo "Supposed installation directory ${GDFDL_INSTALLDIR}/ already exists. Aborting ..."
+		rm -rf `basename $0`
         exit 1
 fi
 
@@ -106,6 +112,7 @@ then
 	GDFLD_INSTALLBASEDIST="sid"
 else
 	echo "ERROR: Unsupported Debian Live version. Aborting ..."
+	rm -rf `basename $0`
 	exit 1
 fi
 
