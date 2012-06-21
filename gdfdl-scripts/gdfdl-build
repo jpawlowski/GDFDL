@@ -118,6 +118,7 @@ if [ -f binary-hybrid.iso ];
 then
 	[[ x"$1" != x"--quiet" ]] && echo "ok"
 	[[ x"$1" != x"--quiet" ]] && echo -n "Moving files to deployment directory and updating symlinks ... "
+	[ ! -d /iso ] && mkdir /iso
 	mv binary-hybrid.iso /iso/${FILENAME}.iso
 	mv ${FILENAME}.log /iso/${FILENAME}.log
 	ln -snf ${FILENAME}.log /iso/${GDFDL_FILE_PREFIX}_latest.log
