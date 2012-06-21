@@ -30,5 +30,5 @@ fi
 ${GDFDL_SCRIPTS}/clean
 
 echo -n "Deleting already created ISO files, logfiles and caches ... "
-rm -rf /iso ${GDFDL_DIR}/cache
+rm -rf /iso/* /iso/.* ${GDFDL_DIR}/cache
 echo "ok"
