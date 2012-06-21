@@ -69,9 +69,14 @@ function gdfdl_set_debianlive_basedistribution () {
 	fi
 }
 
-# check for sufficient sudo rights for non-root users
+# check for sufficient sudo rights for non-root users and set shell commands accordingly
 #
 function gdfdl_check_sudo () {
+	BIN_CHROOT="/usr/sbin/chroot"
+	BIN_MOUNT="/bin/mount"
+	BIN_UMOUNT="/bin/umount"
+	BIN_DEBOOTSTRAP="/usr/sbin/debootstrap"
+	
 	if [[ ${EUID} -ne 0 ]];
 		then
 		if [[ `sudo -l ${BIN_CHROOT} --version 2>&1 >/dev/null` ||
@@ -97,7 +102,7 @@ This build environment requires to run `basename ${BIN_DEBOOTSTRAP}`
 and `basename ${BIN_CHROOT}` commands which implicits root privileges.
 It uses Sudo to fulfill that requirement.
 
-To update your Sudo configuration, a file '/tmp/sudo_${GDFDL_BRANDNAME,,}_${CURRENT_USER,,}'
+To update your Sudo configuration, a file '/tmp/sudo_${CURRENT_USER,,}_${GDFDL_BRANDNAME,,}'
 with your individual configuration was created.
 Please move this file to /etc/sudoers.d/ as followed:
 
@@ -119,6 +124,7 @@ grant root privileges via sudo with no worries.
 			BIN_CHROOT="sudo ${BIN_CHROOT}"
 			BIN_MOUNT="sudo ${BIN_MOUNT}"
 			BIN_UMOUNT="sudo ${BIN_UMOUNT}"
+			BIN_DEBOOTSTRAP="sudo ${DEBOOTSTRAP}"
 			return 0
 		fi
 	fi

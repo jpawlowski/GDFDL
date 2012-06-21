@@ -9,6 +9,10 @@
 
 set -e
 
+# Load functions
+#
+source ${GDFDL_BASEDIR}${GDFDL_SCRIPTS}/gdfdl-functions
+
 # Do not run this script directly.
 #
 if [[ x${GDFDL_DIR} == x"" ]]
@@ -17,12 +21,9 @@ echo "ERROR: Do not run this script directly. Aborting ..."
 	exit 1
 fi
 
-# Settings
+# Check for root rights and set commands
 #
-BIN_CHROOT="/usr/sbin/chroot"
-BIN_DEBOOTSTRAP="/usr/sbin/debootstrap"
-BIN_MOUNT="/bin/mount"
-BIN_UMOUNT="/bin/umount"
+gdfdl_check_sudo
 
 # Check for sudo and chroot on host system
 #
@@ -31,10 +32,6 @@ then
 	echo "Please re-install sudo and chroot first (they once where there!). Aborting ..."
 	exit 1
 fi
-
-# Check for root rights
-#
-gdfdl_check_sudo
 
 # Show help message
 #

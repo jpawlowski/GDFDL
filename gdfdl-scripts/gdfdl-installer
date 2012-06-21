@@ -14,8 +14,6 @@ set -e
 [[ x$1 != x"" ]] && GDFDL_BRANCH=$1 || exit 1
 [[ x$2 != x"" ]] && GDFDL_INSTALL_URL=$2 || exit 1
 [[ x$3 != x"" ]] && GDFDL_GIT_URL=$3 || exit 1
-BIN_CHROOT="/usr/sbin/chroot"
-BIN_DEBOOTSTRAP="/usr/sbin/debootstrap"
 BIN_CURL="/usr/bin/curl"
 
 # Load configuration settings
@@ -64,6 +62,11 @@ fi
 echo -e "\n${GDFDL_BRANDNAME^^} BUILD ENVIRONMENT INSTALLATION\n"
 [[ "${GDFDL_BRANCH}" != "master" ]] && echo -e "- ${GDFDL_BRANCH} branch -\n"
 
+# Check for root rights
+#
+GDFDL_BASEDIR="${GDFDL_INSTALLDIR}"
+gdfdl_check_sudo
+
 # Check for sudo, debootstrap and chroot on host system
 #
 if [[ ! -f "${BIN_CHROOT}" || ! -f "${BIN_DEBOOTSTRAP}" || ! -f "${BIN_CURL}" || ! -f "/usr/bin/sudo" ]];
@@ -71,11 +74,6 @@ then
         echo "Please install packages sudo, debootstrap, curl and chroot first. Aborting ..."
         exit 1
 fi
-
-# Check for root rights
-#
-GDFDL_BASEDIR="${GDFDL_INSTALLDIR}"
-gdfdl_check_sudo
 
 # Check for existing installation
 #
@@ -190,7 +188,7 @@ fi
 echo "GDFDL_SELF=\"\`readlink -f \$0\`\"
 GDFDL_BASEDIR=\"\`dirname \${GDFDL_SELF}\`/${GDFDL_INSTALLNAME}\"
 source \"\${GDFDL_BASEDIR}/conf\"
-[ -f \"\${GDFDL_BASEDIR}/conf-custom\" ] && source \"\${GDFDL_BASEDIR}/conf\"
+[ -f \"\${GDFDL_BASEDIR}/conf-custom\" ] && source \"\${GDFDL_BASEDIR}/conf-custom\"
 . \"\${GDFDL_BASEDIR}${GDFDL_SCRIPTS}/gdfdl-entryscript\"" > "${GDFDL_INSTALLNAME,,}.sh"
 chmod 755 "${GDFDL_INSTALLNAME,,}.sh"
 
