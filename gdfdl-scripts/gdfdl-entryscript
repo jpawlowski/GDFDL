@@ -9,6 +9,11 @@
 
 set -e
 
+BIN_CHROOT="/usr/sbin/chroot"
+BIN_MOUNT="/bin/mount"
+BIN_UMOUNT="/bin/umount"
+BIN_DEBOOTSTRAP="/usr/sbin/debootstrap"
+
 # Load functions
 #
 source ${GDFDL_BASEDIR}${GDFDL_SCRIPTS}/gdfdl-functions
@@ -21,10 +26,6 @@ echo "ERROR: Do not run this script directly. Aborting ..."
 	exit 1
 fi
 
-# Check for root rights and set commands
-#
-gdfdl_check_sudo
-
 # Check for sudo and chroot on host system
 #
 if [[ ! -f "${BIN_CHROOT}" || ! -f "/usr/bin/sudo" ]];
@@ -32,6 +33,10 @@ then
 	echo "Please re-install sudo and chroot first (they once where there!). Aborting ..."
 	exit 1
 fi
+
+# Check for root rights and set commands
+#
+gdfdl_check_sudo
 
 # Show help message
 #
@@ -156,7 +161,7 @@ then
 
 elif [[ $1 == "chroot" ]];
 then
-	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev/pts`" == "x" ]] && ${BIN_MOUNT} -o bind /dev ${GDFDL_BASEDIR}/dev/pts
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev/pts`" == "x" ]] && ${BIN_MOUNT} -o bind /dev/pts ${GDFDL_BASEDIR}/dev/pts
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/sys`" == "x" ]] && ${BIN_MOUNT} -o bind /sys ${GDFDL_BASEDIR}/sys
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/proc`" == "x" ]] && ${BIN_MOUNT} -o bind /proc ${GDFDL_BASEDIR}/proc
 
@@ -168,7 +173,7 @@ then
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/proc`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}/proc
 
 else
-	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev/pts`" == "x" ]] && ${BIN_MOUNT} -o bind /dev ${GDFDL_BASEDIR}/dev/pts
+	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev/pts`" == "x" ]] && ${BIN_MOUNT} -o bind /dev/pts ${GDFDL_BASEDIR}/dev/pts
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/sys`" == "x" ]] && ${BIN_MOUNT} -o bind /sys ${GDFDL_BASEDIR}/sys
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/proc`" == "x" ]] && ${BIN_MOUNT} -o bind /proc ${GDFDL_BASEDIR}/proc
 

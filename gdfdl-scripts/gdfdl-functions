@@ -72,25 +72,23 @@ function gdfdl_set_debianlive_basedistribution () {
 # check for sufficient sudo rights for non-root users and set shell commands accordingly
 #
 function gdfdl_check_sudo () {
-	BIN_CHROOT="/usr/sbin/chroot"
-	BIN_MOUNT="/bin/mount"
-	BIN_UMOUNT="/bin/umount"
-	BIN_DEBOOTSTRAP="/usr/sbin/debootstrap"
-	
 	if [[ ${EUID} -ne 0 ]];
 		then
 		if [[ `sudo -l ${BIN_CHROOT} --version 2>&1 >/dev/null` ||
 			`sudo -l ${BIN_MOUNT} -o bind /sys ${GDFDL_BASEDIR}/sys 2>&1 >/dev/null` ||
 			`sudo -l ${BIN_MOUNT} -o bind /proc ${GDFDL_BASEDIR}/proc 2>&1 >/dev/null` ||
 			`sudo -l ${BIN_MOUNT} -o bind /dev/pts ${GDFDL_BASEDIR}/dev/pts 2>&1 >/dev/null` ||
+			`sudo -l ${BIN_UMOUNT} ${GDFDL_BASEDIR}/sys 2>&1 >/dev/null` ||
+			`sudo -l ${BIN_UMOUNT} ${GDFDL_BASEDIR}/proc 2>&1 >/dev/null` ||
 			`sudo -l ${BIN_UMOUNT} ${GDFDL_BASEDIR}/dev/pts 2>&1 >/dev/null` ]];
 			then
-			CURRENT_USER="`whoami`"
+			local CURRENT_USER="`whoami`"
+			local GDFDL_BASEDIR_SCRIPT="`dirname "${GDFDL_BASEDIR}"`"
 			echo "
-Cmnd_Alias ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_CHROOT = ${BIN_CHROOT} ${GDFDL_BASEDIR}/*
+Cmnd_Alias ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_CHROOT = ${BIN_CHROOT} ${GDFDL_BASEDIR_SCRIPT}/*
 Cmnd_Alias ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_DEBOOTSTRAP = ${BIN_DEBOOTSTRAP}
-Cmnd_Alias ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_UMOUNT = ${BIN_UMOUNT} ${GDFDL_BASEDIR}/*
-Cmnd_Alias ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_MOUNT =  ${BIN_MOUNT} -o bind /dev/pts ${GDFDL_BASEDIR}/*, ${BIN_MOUNT} -o bind /sys ${GDFDL_BASEDIR}/*, ${BIN_MOUNT} -o bind /proc ${GDFDL_BASEDIR}/*
+Cmnd_Alias ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_UMOUNT = ${BIN_UMOUNT} ${GDFDL_BASEDIR_SCRIPT}/*
+Cmnd_Alias ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_MOUNT =  ${BIN_MOUNT} -o bind /dev/pts ${GDFDL_BASEDIR_SCRIPT}/*, ${BIN_MOUNT} -o bind /sys ${GDFDL_BASEDIR_SCRIPT}/*, ${BIN_MOUNT} -o bind /proc ${GDFDL_BASEDIR_SCRIPT}/*
 Cmnd_Alias ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_CMNDS = ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_CHROOT,${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_DEBOOTSTRAP,${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_UMOUNT,${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_MOUNT
 
 ${CURRENT_USER} ALL= NOPASSWD: ${CURRENT_USER^^}_${GDFDL_BRANDNAME^^}_CMNDS" > /tmp/sudo_${CURRENT_USER,,}_${GDFDL_BRANDNAME,,}
@@ -124,7 +122,7 @@ grant root privileges via sudo with no worries.
 			BIN_CHROOT="sudo ${BIN_CHROOT}"
 			BIN_MOUNT="sudo ${BIN_MOUNT}"
 			BIN_UMOUNT="sudo ${BIN_UMOUNT}"
-			BIN_DEBOOTSTRAP="sudo ${DEBOOTSTRAP}"
+			BIN_DEBOOTSTRAP="sudo ${BIN_DEBOOTSTRAP}"
 			return 0
 		fi
 	fi
