@@ -18,6 +18,7 @@ build environment:
 * Avoids clutter in your local Linux installation:
   Keeps everything in a single folder, clean-up and uninstall with a single
   command
+* Ready for enterprise: Continuous Integration Systems support (e.g. Jenkins)
 * Single configuration file:
   One main configuration file for all settings and environment variables
 * Easy Git development handling:
