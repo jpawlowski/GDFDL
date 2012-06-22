@@ -21,7 +21,8 @@ then
     Cleanup build environment including ISO files.
 
     Options:
-      - no options available -
+      --force-cache            Also remove locally cached installation files
+	                           from distribution.
 "
 	exit 0
 fi
@@ -29,6 +30,7 @@ fi
 # do normal cleanup first
 ${GDFDL_SCRIPTS}/clean
 
-echo -n "Deleting already created ISO files, logfiles and caches ... "
-rm -rf /iso/* /iso/.* ${GDFDL_DIR}/cache
+echo -n "Cleaning up build environments ... "
+rm -rf /iso/* /iso/.*
+[[ $1 == "--force-cache" ]] && rm -rf ${GDFDL_DIR}/cache
 echo "ok"
