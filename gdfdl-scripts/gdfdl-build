@@ -90,12 +90,12 @@ fi
 #
 if [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v2" ]]
 then
-	echo ${DATETIME} > ${GDFDL_DIR}/config.v2/chroot_local-includes/gdfdl_build
+	echo ${DATETIME} > ${GDFDL_DIR}/config.v2/chroot_local-includes/etc/gdfdl_build
 	cp -f /conf ${GDFDL_DIR}/config.v2/chroot_local-includes/gdfdl.conf
 	[ -f /conf-custom ] && cp -f /conf-custom ${GDFDL_DIR}/config.v2/chroot_local-includes/gdfdl-custom.conf
 elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v3" ]]
 	then
-	echo ${DATETIME} > ${GDFDL_DIR}/config.v3/includes.chroot/gdfdl_build
+	echo ${DATETIME} > ${GDFDL_DIR}/config.v3/includes.chroot/etc/gdfdl_build
 	cp -f /conf ${GDFDL_DIR}/config.v3/includes.chroot/gdfdl.conf
 	[ -f /conf-custom ] && cp -f /conf-custom ${GDFDL_DIR}/config.v3/chroot_local-includes/gdfdl-custom.conf
 else
