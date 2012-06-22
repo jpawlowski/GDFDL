@@ -4,7 +4,7 @@
 # Installer script
 #
 # Copyright (c) 2012, Julian Pawlowski <jp@jps-networks.eu>
-# See LICENSE file for details.
+# See LICENSE.GDFDL file for details.
 #
 
 set -e

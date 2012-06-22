@@ -4,7 +4,7 @@
 # Standard Linux Settings
 #
 # Copyright (c) 2012, Julian Pawlowski <jp@jps-networks.eu>
-# See LICENSE file for details.
+# See LICENSE.GDFDL file for details.
 #
 
 # check each command return codes for errors
