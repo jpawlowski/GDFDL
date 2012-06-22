@@ -37,8 +37,10 @@ then
 	exit 1
 fi
 
-DATETIME="$(date +%y%m%d_%H%M%S)"
-FILENAME="${GDFDL_FILE_PREFIX}_${DATETIME}"
+BUILDNAME="`date +%y%m%d%H%M`"
+GDFDL_BRANCH="`cat /${GDFDL_BRANDNAME,,}_branch`"
+[[ "${GDFDL_BRANCH}" != "master" ]] && BUILDNAME="${BUILDNAME}-${GDFDL_BRANCH}"
+FILENAME="${GDFDL_FILE_PREFIX}_${BUILDNAME}"
 
 # cleanup build environment from old stuff
 lb clean 2>&1 >/dev/null
@@ -90,12 +92,12 @@ fi
 #
 if [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v2" ]]
 then
-	echo ${DATETIME} > ${GDFDL_DIR}/config.v2/chroot_local-includes/etc/gdfdl_build
+	echo ${BUILDNAME} > ${GDFDL_DIR}/config.v2/chroot_local-includes/etc/gdfdl_build
 	cp -f /conf ${GDFDL_DIR}/config.v2/chroot_local-includes/gdfdl.conf
 	[ -f /conf-custom ] && cp -f /conf-custom ${GDFDL_DIR}/config.v2/chroot_local-includes/gdfdl-custom.conf
 elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v3" ]]
 	then
-	echo ${DATETIME} > ${GDFDL_DIR}/config.v3/includes.chroot/etc/gdfdl_build
+	echo ${BUILDNAME} > ${GDFDL_DIR}/config.v3/includes.chroot/etc/gdfdl_build
 	cp -f /conf ${GDFDL_DIR}/config.v3/includes.chroot/gdfdl.conf
 	[ -f /conf-custom ] && cp -f /conf-custom ${GDFDL_DIR}/config.v3/chroot_local-includes/gdfdl-custom.conf
 else
