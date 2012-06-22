@@ -28,13 +28,11 @@ set -e
 echo -e "Preparing for 1st start ...\n"
 
 # Update login screen texts
+[ -f /etc/init.d/gdfdl-custom-prompt ] && mv -f /etc/init.d/gdfdl-custom-prompt /etc/init.d/gdfdl-prompt
 sed -i 's/##GDFDL_BRANDNAME##/${GDFDL_BRANDNAME^^}/' /etc/init.d/gdfdl-prompt
 sed -i 's/##GDFDL_BRANDINFO##/${GDFDL_BRANDINFO}/' /etc/init.d/gdfdl-prompt
-
-[ -f /etc/init.d/gdfdl-custom-prompt ] && mv -f /etc/init.d/gdfdl-custom-prompt /etc/init.d/gdfdl-prompt
-[ -f /etc/init.d/gdfdl-custom-init ] && . /etc/init.d/gdfdl-custom-init
 
 # self destruction
 #
 rm -rf /gdfdl.conf
-rm -rf /etc/init.d/gdfdl-custom-init; rm -rf /etc/init.d/gdfdl-init; update-rc.d gdfdl-init remove
+rm -rf /etc/init.d/gdfdl-init; update-rc.d gdfdl-init remove

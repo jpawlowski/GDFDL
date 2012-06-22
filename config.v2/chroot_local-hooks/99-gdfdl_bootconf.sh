@@ -23,5 +23,6 @@ echo -e "\n###########################################################
 ## GDFDL: System bootup configuration\n\n"
 
 echo -e "GDFDL: Enabling system services ...\n"
+[ -f /etc/init.d/gdfdl-custom-init ] && update-rc.d gdfdl-custom-init defaults 2>&1
 update-rc.d gdfdl-init defaults 2>&1
 update-rc.d gdfdl-prompt defaults 2>&1
