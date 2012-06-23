@@ -6,8 +6,8 @@ appliances with Debian[^1]'s build automator [live-build][live-build].
 It offers easy installation and management of a consistent and reliable
 build environment.
 
-Homepage: http://gdfdl.profhost.eu/
-Wiki: http://gdfdl-wiki.profhost.eu/
+Homepage: http://gdfdl.profhost.eu/  
+Wiki: http://gdfdl-wiki.profhost.eu/  
 
 
 Who are you?
