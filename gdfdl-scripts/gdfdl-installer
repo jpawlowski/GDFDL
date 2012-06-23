@@ -20,36 +20,47 @@ BIN_UMOUNT="/bin/umount"
 BIN_DEBOOTSTRAP="/usr/sbin/debootstrap"
 BIN_CURL="/usr/bin/curl"
 
-# Load configuration settings
-#
 GDFDL_CONF_URL="${GDFDL_INSTALL_URL}/gdfdl.conf"
-if [[ "`CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL -w "%{http_code}" "${GDFDL_CONF_URL}" -o /dev/null`" == "200"  ]]
-then
-	CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL "${GDFDL_CONF_URL}" > gdfdl.conf
-	source gdfdl.conf && rm gdfdl.conf
-else
-	echo -e "ERROR: Could not load configuration file from Git. /gdfdl.conf does not exist in Git. Aborting ..."
-	rm -rf `basename $0`
-	exit 1
-fi
 GDFDL_CONF_URL_CUSTOM="${GDFDL_INSTALL_URL}/gdfdl-custom.conf"
-if [[ "`CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL -w "%{http_code}" "${GDFDL_CONF_URL_CUSTOM}" -o /dev/null`" == "200"  ]]
-then
-	CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL "${GDFDL_CONF_URL_CUSTOM}" > gdfdl-custom.conf
-	source gdfdl-custom.conf && rm gdfdl-custom.conf
-fi
-
-# Load general functions
-#
 GDFDL_FUNCTIONS_URL="${GDFDL_INSTALL_URL}/gdfdl-scripts/gdfdl-functions"
-if [[ "`CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL -w "%{http_code}" "${GDFDL_FUNCTIONS_URL}" -o /dev/null`" == "200"  ]]
-then
-	CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL "${GDFDL_FUNCTIONS_URL}" > gdfdl-functions
-	source gdfdl-functions && rm gdfdl-functions
+
+# Load configuration settings and functions
+#
+if [ x"${GDFDL_INSTALLTYPE}" == x"ci" ];
+	then
+	# Fast loading from local files for CI install
+	source "${GDFDL_CONF_URL}"
+	[ -f "${GDFDL_CONF_URL_CUSTOM}" ] && source "${GDFDL_CONF_URL_CUSTOM}"
+	source "${GDFDL_FUNCTIONS_URL}"
 else
-	echo -e "ERROR: Could not load functions file from Git. Aborting ..."
-	rm -rf `basename $0`
-	exit 1
+	# Web installer
+	if [[ "`CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL -w "%{http_code}" "${GDFDL_CONF_URL}" -o /dev/null`" == "200"  ]]
+		then
+		CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL "${GDFDL_CONF_URL}" > gdfdl.conf
+		source gdfdl.conf && rm gdfdl.conf
+	else
+		echo -e "ERROR: Could not load configuration file from Git. /gdfdl.conf does not exist in Git. Aborting ..."
+		rm -rf `basename $0`
+		exit 1
+	fi
+
+	if [[ "`CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL -w "%{http_code}" "${GDFDL_CONF_URL_CUSTOM}" -o /dev/null`" == "200"  ]]
+		then
+		CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL "${GDFDL_CONF_URL_CUSTOM}" > gdfdl-custom.conf
+		source gdfdl-custom.conf && rm gdfdl-custom.conf
+	else
+		echo -e "Note: No customer configuration loaded."
+	fi
+
+	if [[ "`CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL -w "%{http_code}" "${GDFDL_FUNCTIONS_URL}" -o /dev/null`" == "200"  ]]
+		then
+		CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL "${GDFDL_FUNCTIONS_URL}" > gdfdl-functions
+		source gdfdl-functions && rm gdfdl-functions
+	else
+		echo -e "ERROR: Could not load functions file from Git. Aborting ..."
+		rm -rf `basename $0`
+		exit 1
+	fi
 fi
 
 # Set install directory
