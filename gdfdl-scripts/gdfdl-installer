@@ -14,6 +14,7 @@ set -e
 [[ x$1 != x"" ]] && GDFDL_BRANCH=$1 || exit 1
 [[ x$2 != x"" ]] && GDFDL_INSTALL_URL=$2 || exit 1
 [[ x$3 != x"" ]] && GDFDL_GIT_URL=$3 || exit 1
+[[ x$4 != x"" ]] && GDFDL_INSTALLTYPE=$4
 BIN_CHROOT="/usr/sbin/chroot"
 BIN_MOUNT="/bin/mount"
 BIN_UMOUNT="/bin/umount"
