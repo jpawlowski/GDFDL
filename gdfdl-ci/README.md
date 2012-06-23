@@ -2,7 +2,7 @@
 Continuous Integration
 ======================
 
-Usage with CI systems like Jenkins to be descried.
+Usage with CI systems like Jenkins to be described.
 
 
 Copy&Paste to Jenkins/Hudson Execute shell field after you have cloned the Git:
