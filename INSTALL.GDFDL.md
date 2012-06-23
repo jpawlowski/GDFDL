@@ -41,14 +41,16 @@ Feel free to extend the wrapper script for additional hosting providers.
 
 
 ### 2. Install from local Git clone (for humans)
-You may use the local installer from Continuous Integration scripts
+You may use the local installer from Continuous Integration scripts in case you
+don't want to use the web installer.
 After you have cloned the repository your favorite way, use this command to install:
 
 `./gdfdl-ci/01-install/00-run.sh <DIRECTORY>`
 
 This will install the build environment to <DIRECTORY>. Note that giving a
 destination directory is mandatory here, otherwise you would end in a special
-debugging installation which is normally not what you want to see.
+debugging installation (see point 3) which is normally not what you want to
+see.
 
 
 ### 3. Install from local Git within CI (for machines)
