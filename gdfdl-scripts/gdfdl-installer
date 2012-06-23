@@ -169,7 +169,7 @@ if [ x"${GDFDL_INSTALLTYPE}" == x"ci" ];
 	#
 	echo "Taking copy from local Git ..."
 	${BIN_CHROOT} "${GDFDL_INSTALLDIR}" mkdir "${GDFDL_DIR}" 2>&1 >/dev/null
-	tar --exclude="`dirname ${GDFDL_INSTALLDIR}`" -c -f - "${GDFDL_INSTALL_URL}" | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tar -C "${GDFDL_DIR}" -x -f -
+	(cd "${GDFDL_INSTALL_URL}"; tar --exclude="./.ci" -c -f - . | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tar -C "${GDFDL_DIR}" -x -f -)
 else
 	# Get GDFDL from remote Git
 	#
