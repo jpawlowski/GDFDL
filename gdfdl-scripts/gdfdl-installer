@@ -160,11 +160,22 @@ ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" apt-get -y --force-yes install -qq \
 	md5deep \
 		2>&1 >/dev/null
 
-# Get GDFDL from Git
+# Install GDFDL into chroot environment
 #
-echo "Cloning from Git ..."
 date +%s | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tee "/updatestatus" 2>&1 >/dev/null
-${BIN_CHROOT} "${GDFDL_INSTALLDIR}" git clone -b "${GDFDL_BRANCH}" "${GDFDL_GIT_URL}" "${GDFDL_DIR}" 2>&1 >/dev/null
+if [ x"${GDFDL_INSTALLTYPE}" == x"ci" ];
+	then
+	# Take copy of local GDFDL Git instead of cloning again
+	#
+	echo "Taking copy from local Git ..."
+	${BIN_CHROOT} "${GDFDL_INSTALLDIR}" mkdir "${GDFDL_DIR}" 2>&1 >/dev/null
+	tar --exclude="`dirname ${GDFDL_INSTALLDIR}`" -c -f - "${GDFDL_INSTALL_URL}" | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tar -C "${GDFDL_DIR}" -x -f -
+else
+	# Get GDFDL from remote Git
+	#
+	echo "Cloning from Git ..."
+	${BIN_CHROOT} "${GDFDL_INSTALLDIR}" git clone -b "${GDFDL_BRANCH}" "${GDFDL_GIT_URL}" "${GDFDL_DIR}" 2>&1 >/dev/null
+fi
 ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf ../iso "${GDFDL_DIR}/iso"
 
 # Link Debian Live directories from Git

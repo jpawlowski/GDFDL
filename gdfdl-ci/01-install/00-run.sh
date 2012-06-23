@@ -20,3 +20,5 @@ else
 	# run installer in normal mode for humans
 	bash "${GDFDL_INSTALLER_BASEDIR}/gdfdl-scripts/gdfdl-installer" "${GDFDL_BRANCH}" "${GDFDL_INSTALLER_BASEDIR}" "${GDFDL_INSTALLER_BASEDIR}" ci
 fi
+
+cd -
