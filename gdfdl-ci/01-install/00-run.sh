@@ -12,4 +12,11 @@ cd "${GDFDL_INSTALLER_DESTINATION}"
 
 GDFDL_BRANCH="`git remote show origin | grep HEAD | cut -d " " -f 5`"
 
-bash -ex "${GDFDL_INSTALLER_BASEDIR}/gdfdl-scripts/gdfdl-installer" "${GDFDL_BRANCH}" "${GDFDL_INSTALLER_BASEDIR}" "${GDFDL_INSTALLER_BASEDIR}" ci
+if [ x"$1" == x"" ];
+	then
+	# run installer in debug mode for correct CI tracking of changes
+	bash -ex "${GDFDL_INSTALLER_BASEDIR}/gdfdl-scripts/gdfdl-installer" "${GDFDL_BRANCH}" "${GDFDL_INSTALLER_BASEDIR}" "${GDFDL_INSTALLER_BASEDIR}" ci
+else
+	# run installer in normal mode for humans
+	bash "${GDFDL_INSTALLER_BASEDIR}/gdfdl-scripts/gdfdl-installer" "${GDFDL_BRANCH}" "${GDFDL_INSTALLER_BASEDIR}" "${GDFDL_INSTALLER_BASEDIR}" ci
+fi
