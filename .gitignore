@@ -8,6 +8,7 @@ auto/
 config/
 local/
 .build/
+.ci/
 iso/
 .DS_Store
 *.log
