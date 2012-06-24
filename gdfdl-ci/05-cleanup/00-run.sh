@@ -26,7 +26,7 @@ GDFDL_ENTRYWRAPPER="`find "${GDFDL_BASEDIR}/.ci" -maxdepth 1 -name *.sh`"
 # If we find another script named '01-run.sh', start this instead.
 # If --force option was given, stay in line...
 #
-if [[ -f "${GDFDL_BASEDIR_CI_STEP}/01-run.sh" && x"$1" != "--force" ]]
+if [[ -f "${GDFDL_BASEDIR_CI_STEP}/01-run.sh" && x"$1" != x"--force" ]]
 	then
 	echo "NOTE: '${GDFDL_BASEDIR_CI_STEP}/01-run.sh' found, handing over to that one ..."
 	"${GDFDL_BASEDIR_CI_STEP}/01-run.sh" "${@}"

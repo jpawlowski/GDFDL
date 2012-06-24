@@ -27,7 +27,7 @@ then
 	exit 0
 fi
 
-echo -n "Cleaning up Build Environment ..."
+echo -n "Cleaning up Build Environment ... "
 lb clean 2>&1 >/dev/null
 rm -rf *.log
 echo "ok"

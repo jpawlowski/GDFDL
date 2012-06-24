@@ -30,7 +30,7 @@ fi
 # do normal cleanup first
 ${GDFDL_SCRIPTS}/clean
 
-echo -n "Cleaning up build environments ... "
+echo -n "Cleaning up build artifacts and caches ... "
 rm -rf /iso/*
 [[ $1 == "--force-cache" ]] && rm -rf ${GDFDL_DIR}/cache
 echo "ok"
