@@ -7,6 +7,14 @@
 # See LICENSE.GDFDL file for details.
 #
 
+###
+# Don't change this file directly. Create your own file 01-run.sh instead.
+# You can call your script directly or still call this script, it will hand over
+# to your own smoothly.
+# Also if you create additional scripts following the series 01-,02-,03- etc
+# we will hand over the stick to the next one in this same directory.
+###
+
 set -e
 
 SELF="`readlink -f $0`"
@@ -15,7 +23,33 @@ GDFDL_BASEDIR_CI="`dirname ${GDFDL_BASEDIR_CI_02}`"
 GDFDL_BASEDIR="`dirname ${GDFDL_BASEDIR_CI}`"
 GDFDL_ENTRYWRAPPER="`find "${GDFDL_BASEDIR}/.ci" -maxdepth 1 -name *.sh`"
 
+# if we find another script named '01-run.sh', start this instead.
+#
+if [ -f "${GDFDL_BASEDIR_CI_02}/01-run.sh" ]
+	then
+	echo "NOTE: '${GDFDL_BASEDIR_CI_02}/01-run.sh' found, handing over to that one ..."
+	"${GDFDL_BASEDIR_CI_02}/01-run.sh" "${@}"
+	exit 0
+fi
+
+# run build
+#
 if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
 	then
-	bash -ex "${GDFDL_ENTRYWRAPPER}" build --verbose
+	"${GDFDL_ENTRYWRAPPER}" update --force
+	"${GDFDL_ENTRYWRAPPER}" update --forceconfig
+	"${GDFDL_ENTRYWRAPPER}" build --verbose
+else
+	echo "ERROR: No existing build environment installation found. Run installer first."
+	exit 1
+fi
+
+# if we find another script in the series, go on and run that
+#
+GDFDL_CI_NEXT="`find "${GDFDL_BASEDIR_CI_02}" -maxdepth 1 -name 01-*.sh`"
+if [ -f "${GDFDL_CI_NEXT}" ]
+	then
+	echo "NOTE: Next script '${GDFDL_CI_NEXT}' found, handing over now ..."
+	"${GDFDL_CI_NEXT}" "${@}"
+	exit 0
 fi

@@ -1,0 +1,50 @@
+#!/bin/bash
+#
+# GDFDL - A Development Framework for Debian live-build
+# CI depoyment script
+#
+# Copyright (c) 2012, Julian Pawlowski <jp@jps-networks.eu>
+# See LICENSE.GDFDL file for details.
+#
+
+###
+# Don't change this file directly. Create your own file 01-run.sh instead.
+# You can call your script directly or still call this script, it will hand over
+# to your own smoothly.
+# Also if you create additional scripts following the series 01-,02-,03- etc
+# we will hand over the stick to the next one in this same directory.
+###
+
+set -e
+
+SELF="`readlink -f $0`"
+GDFDL_BASEDIR_CI_04="`dirname ${SELF}`"
+GDFDL_BASEDIR_CI="`dirname ${GDFDL_BASEDIR_CI_04}`"
+GDFDL_BASEDIR="`dirname ${GDFDL_BASEDIR_CI}`"
+GDFDL_ENTRYWRAPPER="`find "${GDFDL_BASEDIR}/.ci" -maxdepth 1 -name *.sh`"
+
+# if we find another script named '01-run.sh', start this instead.
+#
+if [ -f "${GDFDL_BASEDIR_CI_04}/01-run.sh" ]
+	then
+	echo "NOTE: '${GDFDL_BASEDIR_CI_04}/01-run.sh' found, handing over to that one ..."
+	"${GDFDL_BASEDIR_CI_04}/01-run.sh" "${@}"
+	exit 0
+fi
+
+# run deployment taks
+#
+if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
+	#TODO default deployment offers/examples
+	echo -n ""
+fi
+
+# if we find another script in the series, go on and run that
+#
+GDFDL_CI_NEXT="`find "${GDFDL_BASEDIR_CI_04}" -maxdepth 1 -name 01-*.sh`"
+if [ -f "${GDFDL_CI_NEXT}" ]
+	then
+	echo "NOTE: Next script '${GDFDL_CI_NEXT}' found, handing over now ..."
+	"${GDFDL_CI_NEXT}" "${@}"
+	exit 0
+fi
