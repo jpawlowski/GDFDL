@@ -46,7 +46,7 @@ fi
 # if we find another script in the series, go on and run that
 # (but ignore 01-run.sh to avoid loops)
 #
-GDFDL_CI_NEXT="`find "${GDFDL_BASEDIR_CI_02}" -maxdepth 1 -name 01-*.sh | grep -v 01-run.sh`"
+GDFDL_CI_NEXT="`find "${GDFDL_BASEDIR_CI_02}" -maxdepth 1 -name '01-*.sh' | grep -v 01-run.sh`"
 if [ -f "${GDFDL_CI_NEXT}" ]
 	then
 	echo "NOTE: Next script '${GDFDL_CI_NEXT}' found, handing over now ..."
