@@ -139,7 +139,16 @@ fi
 #
 
 if [[ $1 == "chroot-iso" ]];
-then
+	then
+
+	# Print chroot directory if requested
+	#
+	if [ $2 == "--printdir" ];
+	then
+		echo ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot
+		exit 0
+	fi
+
 	# Check if chroot from build phase exists
 	#
 	if [ ! -d ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot ];
@@ -160,7 +169,16 @@ then
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/proc`" != "x" ]] && ${BIN_UMOUNT} ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot/proc
 
 elif [[ $1 == "chroot" ]];
-then
+	then
+
+	# Print chroot directory if requested
+	#
+	if [ $2 == "--printdir" ];
+	then
+		echo ${GDFDL_BASEDIR}
+		exit 0
+	fi
+
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/dev/pts`" == "x" ]] && ${BIN_MOUNT} -o bind /dev/pts ${GDFDL_BASEDIR}/dev/pts
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/sys`" == "x" ]] && ${BIN_MOUNT} -o bind /sys ${GDFDL_BASEDIR}/sys
 	[[ "x`cat /proc/mounts | grep ${GDFDL_BASEDIR}/proc`" == "x" ]] && ${BIN_MOUNT} -o bind /proc ${GDFDL_BASEDIR}/proc
