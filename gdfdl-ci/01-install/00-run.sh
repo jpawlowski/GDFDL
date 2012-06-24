@@ -26,7 +26,7 @@ GDFDL_BRANCH="`cd "${GDFDL_INSTALLER_BASEDIR}"; git branch | cut -d " " -f 2`"
 cd "${GDFDL_INSTALLER_DESTINATION}"
 
 # start the actual installer
-"${GDFDL_INSTALLER_BASEDIR}/gdfdl-scripts/gdfdl-installer" "${GDFDL_BRANCH}" "${GDFDL_INSTALLER_BASEDIR}" "${GDFDL_INSTALLER_BASEDIR}" ci
+bash "${GDFDL_INSTALLER_BASEDIR}/gdfdl-scripts/gdfdl-installer" "${GDFDL_BRANCH}" "${GDFDL_INSTALLER_BASEDIR}" "${GDFDL_INSTALLER_BASEDIR}" ci
 
 cd - 2>&1 >/dev/null
 
