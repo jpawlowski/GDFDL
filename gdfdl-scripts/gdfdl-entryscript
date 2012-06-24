@@ -143,16 +143,16 @@ if [[ $1 == "chroot-iso" ]];
 
 	# Print chroot directory if requested
 	#
-	if [ $2 == "--printdir" ];
-	then
+	if [[ $2 == "--printdir" ]];
+		then
 		echo ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot
 		exit 0
 	fi
 
 	# Check if chroot from build phase exists
 	#
-	if [ ! -d ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot ];
-	then
+	if [[ ! -d ${GDFDL_BASEDIR}${GDFDL_DIR}/chroot ]];
+		then
 		echo "No chroot filesystem for ISO found. Run '`basename "$0"` build' first."
 		exit 1
 	fi
@@ -173,8 +173,8 @@ elif [[ $1 == "chroot" ]];
 
 	# Print chroot directory if requested
 	#
-	if [ $2 == "--printdir" ];
-	then
+	if [[ $2 == "--printdir" ]];
+		then
 		echo ${GDFDL_BASEDIR}
 		exit 0
 	fi
