@@ -48,6 +48,7 @@ fi
 # if we find another script in the series, go on and run that
 # (but ignore 01-run.sh to avoid loops)
 #
+set +e
 GDFDL_CI_NEXT="`find "${GDFDL_BASEDIR_CI_STEP}" -maxdepth 1 -type f -name '01-*.sh' | grep -v 01-run.sh`"
 if [ x"${GDFDL_CI_NEXT}" != x"" ]
 	then
