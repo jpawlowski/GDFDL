@@ -34,7 +34,8 @@ fi
 
 # run deployment taks
 #
-if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
+if [[ -f "${GDFDL_ENTRYWRAPPER}" ]]
+	then
 	#TODO default deployment offers/examples
 	echo -n ""
 fi

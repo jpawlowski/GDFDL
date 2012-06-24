@@ -34,7 +34,8 @@ fi
 
 # run QA checks
 #
-if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
+if [[ -f "${GDFDL_ENTRYWRAPPER}" ]]
+	then
 	#TODO default checks to be defined
 	echo -n ""
 fi

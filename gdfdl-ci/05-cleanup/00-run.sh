@@ -34,7 +34,8 @@ fi
 
 # run cleanup taks
 #
-if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
+if [[ -f "${GDFDL_ENTRYWRAPPER}" ]]
+	then
 	"${GDFDL_ENTRYWRAPPER}" full-clean
 else
 	echo "ERROR: No existing build environment installation found. Run installer first."
