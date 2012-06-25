@@ -9,6 +9,7 @@ config/
 local/
 .build/
 .ci/
+.gdfdl-cache/
 iso/
 .DS_Store
 *.log
