@@ -38,17 +38,17 @@ if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
 
 	echo "Copying current version into chroot environment ..."
 	GDFDL_ENTRYPATH="`"${GDFDL_ENTRYWRAPPER}" chroot --printdir`"
-	GDFDL_BRANCH="`"${GDFDL_ENTRYWRAPPER}" cat /gdfdl_branch`"
-	GDFDL_BRANCH_OLDREMOTE="`"${GDFDL_ENTRYWRAPPER}" cd /be; git remote`"
+	GDFDL_BRANCH="`"${GDFDL_ENTRYWRAPPER}" chroot cat /gdfdl_branch`"
+	GDFDL_BRANCH_OLDREMOTE="`"${GDFDL_ENTRYWRAPPER}" chroot cd /be; git remote`"
 	[ ! -d "${GDFDL_ENTRYPATH}/ci-sources" ] && mkdir -m 777 -p "${GDFDL_ENTRYPATH}/ci-sources"
 	[ -d "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current" ] && rm -rf "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current"
 	git clone "${GDFDL_BASEDIR}" "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current"
-	"${GDFDL_ENTRYWRAPPER}" cd /be; git remote rm "${GDFDL_BRANCH_OLDREMOTE}"
-	"${GDFDL_ENTRYWRAPPER}" cd /be; git remote add origin /ci-sources/gdfdl-current
-	"${GDFDL_ENTRYWRAPPER}" cd /be; git config "branch.${GDFDL_BRANCH}.remote" origin
-	"${GDFDL_ENTRYWRAPPER}" cd /be; git config "branch.${GDFDL_BRANCH}.merge" "refs/heads/${GDFDL_BRANCH}"
-	"${GDFDL_ENTRYWRAPPER}" update
-	"${GDFDL_ENTRYWRAPPER}" update --forceconfig
+	"${GDFDL_ENTRYWRAPPER}" chroot cd /be; git remote rm "${GDFDL_BRANCH_OLDREMOTE}"
+	"${GDFDL_ENTRYWRAPPER}" chroot cd /be; git remote add origin /ci-sources/gdfdl-current
+	"${GDFDL_ENTRYWRAPPER}" chroot cd /be; git config "branch.${GDFDL_BRANCH}.remote" origin
+	"${GDFDL_ENTRYWRAPPER}" chroot cd /be; git config "branch.${GDFDL_BRANCH}.merge" "refs/heads/${GDFDL_BRANCH}"
+	"${GDFDL_ENTRYWRAPPER}" chroot update
+	"${GDFDL_ENTRYWRAPPER}" chroot update --forceconfig
 else
 	echo "ERROR: No existing build environment installation found. Run installer first."
 	exit 1
