@@ -37,8 +37,6 @@ fi
 #
 if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
 	then
-	"${GDFDL_ENTRYWRAPPER}" update --force
-	"${GDFDL_ENTRYWRAPPER}" update --forceconfig
 	"${GDFDL_ENTRYWRAPPER}" build --verbose
 else
 	echo "ERROR: No existing build environment installation found. Run installer first."
