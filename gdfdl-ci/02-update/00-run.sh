@@ -39,7 +39,7 @@ if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
 	echo "Copying current version into chroot environment ..."
 	GDFDL_ENTRYPATH="`"${GDFDL_ENTRYWRAPPER}" chroot --printdir`"
 	GDFDL_BRANCH="`"${GDFDL_ENTRYWRAPPER}" chroot cat /gdfdl_branch`"
-	GDFDL_BRANCH_OLDREMOTE="`"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be git remote`"
+	GDFDL_BRANCH_OLDREMOTE="`"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be remote`"
 	[ ! -d "${GDFDL_ENTRYPATH}/ci-sources" ] && "${GDFDL_ENTRYWRAPPER}" chroot mkdir -m 777 -p /ci-sources
 	[ -d "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current" ] && rm -rf "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current"
 	git clone "${GDFDL_BASEDIR}" "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current"
