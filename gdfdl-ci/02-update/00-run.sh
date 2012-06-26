@@ -38,15 +38,14 @@ if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
 
 	echo "Copying current version into chroot environment ..."
 	GDFDL_ENTRYPATH="`"${GDFDL_ENTRYWRAPPER}" chroot --printdir`"
-	GDFDL_BRANCH="`"${GDFDL_ENTRYWRAPPER}" chroot cat /gdfdl_branch`"
-	GDFDL_BRANCH_OLDREMOTE="`"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be remote`"
+	GDFDL_OLDREMOTE="`"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be remote`"
 	[ ! -d "${GDFDL_ENTRYPATH}/ci-sources" ] && "${GDFDL_ENTRYWRAPPER}" chroot mkdir -m 777 -p /ci-sources
 	[ -d "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current" ] && rm -rf "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current"
 	git clone "${GDFDL_BASEDIR}" "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current"
-	"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be remote rm "${GDFDL_BRANCH_OLDREMOTE}"
+	"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be remote rm "${GDFDL_OLDREMOTE}"
 	"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be remote add origin /ci-sources/gdfdl-current
-	"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be config "branch.${GDFDL_BRANCH}.remote" origin
-	"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be config "branch.${GDFDL_BRANCH}.merge" "refs/heads/${GDFDL_BRANCH}"
+	"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be config branch.master.remote origin
+	"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be config branch.master.merge refs/heads/master
 	"${GDFDL_ENTRYWRAPPER}" update
 	"${GDFDL_ENTRYWRAPPER}" update --forceconfig
 else
