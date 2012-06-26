@@ -47,8 +47,8 @@ if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
 	"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be remote add origin /ci-sources/gdfdl-current
 	"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be config "branch.${GDFDL_BRANCH}.remote" origin
 	"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be config "branch.${GDFDL_BRANCH}.merge" "refs/heads/${GDFDL_BRANCH}"
-	"${GDFDL_ENTRYWRAPPER}" chroot update
-	"${GDFDL_ENTRYWRAPPER}" chroot update --forceconfig
+	"${GDFDL_ENTRYWRAPPER}" update
+	"${GDFDL_ENTRYWRAPPER}" update --forceconfig
 else
 	echo "ERROR: No existing build environment installation found. Run installer first."
 	exit 1
