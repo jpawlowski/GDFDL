@@ -26,7 +26,7 @@ GDFDL_ENTRYWRAPPER="`find "${GDFDL_BASEDIR}/.ci" -maxdepth 1 -name '*.sh'`"
 #
 if [[ -f "${GDFDL_BASEDIR_CI_STEP}/01-run.sh" && x"$1" != x"--force" ]]
 	then
-	echo "NOTE: '${GDFDL_BASEDIR_CI_STEP}/01-run.sh' found, handing over to that one ..."
+	echo "CI - NOTE: '${GDFDL_BASEDIR_CI_STEP}/01-run.sh' found, handing over to that one ..."
 	"${GDFDL_BASEDIR_CI_STEP}/01-run.sh" "${@}"
 	exit 0
 fi
@@ -42,14 +42,14 @@ if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
 	[[ -d "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current" ]] && rm -rf "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current"
 
 	# implement Git upgrade path from CI system into local copy of build environment in chroot
-	echo "Creating Git local transfer copy ..."
+	echo "CI - Creating Git local transfer copy ..."
 	git clone "${GDFDL_BASEDIR}" "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current"
 
 	# re-create correct branch name in case CI system has somehow weird Git handling (fix for Jenkins)
 	BRANCHCHECK="`git --git-dir="${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current/.git" --work-tree="${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current" branch | grep ^* | cut -d " " -f 2`"
 	if [[ x"${BRANCHCHECK}" != x"${GDFDL_BRANCH}" ]]
 		then
-		echo "Correcting Git branch name in transfer copy ..."
+		echo "CI - Correcting Git branch name in transfer copy ..."
 		git --git-dir="${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current/.git" --work-tree="${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current" checkout -b "${GDFDL_BRANCH}"
 	fi
 
@@ -60,7 +60,7 @@ if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
 	if [[ x"${REMOTECHECK}" == x"" ]]
 		then
 		GDFDL_OLDREMOTE="`"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be remote`"
-		echo "Updating build environment to use Git transfer copy as remote upstream ..."
+		echo "CI - Updating build environment to use Git transfer copy as remote upstream ..."
 		"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be remote rm "${GDFDL_OLDREMOTE}"
 		"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be remote add "${GDFDL_OLDREMOTE}" /ci-sources/gdfdl-current
 		"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be config "branch.${GDFDL_BRANCH}.remote" "${GDFDL_OLDREMOTE}"
@@ -71,7 +71,7 @@ if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
 	"${GDFDL_ENTRYWRAPPER}" update
 	"${GDFDL_ENTRYWRAPPER}" update --forceconfig
 else
-	echo "ERROR: No existing build environment installation found. Run installer first."
+	echo "CI - ERROR: No existing build environment installation found. Run installer first."
 	exit 1
 fi
 
@@ -82,7 +82,7 @@ set +e
 GDFDL_CI_NEXT="`find "${GDFDL_BASEDIR_CI_STEP}" -maxdepth 1 -type f -name '01-*.sh' | grep -v 01-run.sh`"
 if [ x"${GDFDL_CI_NEXT}" != x"" ]
 	then
-	echo "NOTE: Next script '${GDFDL_CI_NEXT}' found, handing over now ..."
+	echo "CI - NOTE: Next script '${GDFDL_CI_NEXT}' found, handing over now ..."
 	"${GDFDL_CI_NEXT}" "${@}"
 	exit 0
 fi

@@ -28,7 +28,7 @@ GDFDL_ENTRYWRAPPER="`find "${GDFDL_BASEDIR}/.ci" -maxdepth 1 -name *.sh`"
 #
 if [[ -f "${GDFDL_BASEDIR_CI_STEP}/01-run.sh" && x"$1" != x"--force" ]]
 	then
-	echo "NOTE: '${GDFDL_BASEDIR_CI_STEP}/01-run.sh' found, handing over to that one ..."
+	echo "CI - NOTE: '${GDFDL_BASEDIR_CI_STEP}/01-run.sh' found, handing over to that one ..."
 	"${GDFDL_BASEDIR_CI_STEP}/01-run.sh" "${@}"
 	exit 0
 fi
@@ -39,7 +39,7 @@ if [[ -f "${GDFDL_ENTRYWRAPPER}" ]]
 	then
 	"${GDFDL_ENTRYWRAPPER}" full-clean
 else
-	echo "ERROR: No existing build environment installation found. Run installer first."
+	echo "CI - ERROR: No existing build environment installation found. Run installer first."
 	exit 1
 fi
 
@@ -50,7 +50,7 @@ set +e
 GDFDL_CI_NEXT="`find "${GDFDL_BASEDIR_CI_STEP}" -maxdepth 1 -type f -name '01-*.sh' | grep -v 01-run.sh`"
 if [ x"${GDFDL_CI_NEXT}" != x"" ]
 	then
-	echo "NOTE: Next script '${GDFDL_CI_NEXT}' found, handing over now ..."
+	echo "CI - NOTE: Next script '${GDFDL_CI_NEXT}' found, handing over now ..."
 	"${GDFDL_CI_NEXT}" "${@}"
 	exit 0
 fi
