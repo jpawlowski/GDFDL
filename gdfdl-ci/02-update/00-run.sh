@@ -43,18 +43,20 @@ if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
 
 	# implement Git upgrade path from CI system into local copy of build environment in chroot
 	echo "Creating Git local transfer copy ..."
-	git clone "${GDFDL_BASEDIR}" "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current" 2>&1 >/dev/null
+	git clone "${GDFDL_BASEDIR}" "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current"
 
 	# re-create correct branch name in case CI system has somehow weird Git handling (fix for Jenkins)
 	BRANCHCHECK="`git --git-dir="${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current/.git" --work-tree="${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current" branch | grep ^* | cut -d " " -f 2`"
 	if [[ x"${BRANCHCHECK}" != x"${GDFDL_BRANCH}" ]]
 		then
 		echo "Correcting Git branch name in transfer copy ..."
-		git --git-dir="${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current/.git" --work-tree="${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current" checkout -b "${GDFDL_BRANCH}" 2>&1 >/dev/null
+		git --git-dir="${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current/.git" --work-tree="${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current" checkout -b "${GDFDL_BRANCH}"
 	fi
 
 	# correct Git remote tracking for local directory
+	set +e
 	REMOTECHECK="`git --git-dir="${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current/.git" --work-tree="${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current" remote -v | grep fetch | grep "/ci-sources/gdfdl-current"`"
+	set -e
 	if [[ x"${REMOTECHECK}" == x"" ]]
 		then
 		GDFDL_OLDREMOTE="`"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be remote`"
