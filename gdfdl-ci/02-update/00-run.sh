@@ -45,6 +45,7 @@ if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
 		# implement Git upgrade path from CI system into local copy of build environment in chroot
 		then
 		echo "Creating Git local transfer copy ..."
+		[[ -d "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current" ]] && rm -rf "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current"
 		git clone "${GDFDL_BASEDIR}" "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current" 2>&1 >/dev/null
 
 		# re-create correct branch name in case CI system has somehow weird Git handling (fix for Jenkins)
