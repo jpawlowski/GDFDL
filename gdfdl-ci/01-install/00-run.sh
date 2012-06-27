@@ -19,6 +19,8 @@ SELF="`readlink -f $0`"
 GDFDL_BASEDIR_CI_STEP="`dirname ${SELF}`"
 GDFDL_BASEDIR_CI="`dirname ${GDFDL_BASEDIR_CI_STEP}`"
 GDFDL_BASEDIR="`dirname ${GDFDL_BASEDIR_CI}`"
+source "${GDFDL_BASEDIR}/gdfdl.conf"
+[ -f "${GDFDL_BASEDIR}/gdfdl-custom.conf" ] && source "${GDFDL_BASEDIR}/gdfdl-custom.conf"
 [ x"$1" == x"" ] && GDFDL_DESTINATION="${GDFDL_BASEDIR}/.ci" || GDFDL_DESTINATION="$1"
 
 if [[ x"${GIT_BRANCH}" != x"" ]]

@@ -19,6 +19,8 @@ SELF="`readlink -f $0`"
 GDFDL_BASEDIR_CI_STEP="`dirname ${SELF}`"
 GDFDL_BASEDIR_CI="`dirname ${GDFDL_BASEDIR_CI_STEP}`"
 GDFDL_BASEDIR="`dirname ${GDFDL_BASEDIR_CI}`"
+source "${GDFDL_BASEDIR}/gdfdl.conf"
+[ -f "${GDFDL_BASEDIR}/gdfdl-custom.conf" ] && source "${GDFDL_BASEDIR}/gdfdl-custom.conf"
 GDFDL_ENTRYWRAPPER="`find "${GDFDL_BASEDIR}/.ci" -maxdepth 1 -name '*.sh'`"
 
 # If we find another script named '01-run.sh', start this instead.
@@ -37,7 +39,7 @@ if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
 	then
 
 	GDFDL_ENTRYPATH="`"${GDFDL_ENTRYWRAPPER}" chroot --printdir`"
-	GDFDL_BRANCH="`"${GDFDL_ENTRYWRAPPER}" chroot cat /gdfdl_branch`"
+	GDFDL_BRANCH="`"${GDFDL_ENTRYWRAPPER}" chroot cat /${GDFDL_BRANDNAME,,}_branch`"
 	[ ! -d "${GDFDL_ENTRYPATH}/ci-sources" ] && "${GDFDL_ENTRYWRAPPER}" chroot mkdir -m 777 -p /ci-sources
 	[[ -d "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current" ]] && rm -rf "${GDFDL_ENTRYPATH}/ci-sources/gdfdl-current"
 
@@ -59,12 +61,12 @@ if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
 	set -e
 	if [[ x"${REMOTECHECK}" == x"" ]]
 		then
-		GDFDL_OLDREMOTE="`"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be remote`"
+		GDFDL_OLDREMOTE="`"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir="${GDFDL_DIR}/.git" --work-tree="${GDFDL_DIR}" remote`"
 		echo "CI - Updating build environment to use Git transfer copy as remote upstream ..."
-		"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be remote rm "${GDFDL_OLDREMOTE}"
-		"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be remote add "${GDFDL_OLDREMOTE}" /ci-sources/gdfdl-current
-		"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be config "branch.${GDFDL_BRANCH}.remote" "${GDFDL_OLDREMOTE}"
-		"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir=/be/.git --work-tree=/be config "branch.${GDFDL_BRANCH}.merge" "refs/heads/${GDFDL_BRANCH}"
+		"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir="${GDFDL_DIR}/.git" --work-tree="${GDFDL_DIR}" remote rm "${GDFDL_OLDREMOTE}"
+		"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir="${GDFDL_DIR}/.git" --work-tree="${GDFDL_DIR}" remote add "${GDFDL_OLDREMOTE}" /ci-sources/gdfdl-current
+		"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir="${GDFDL_DIR}/.git" --work-tree="${GDFDL_DIR}" config "branch.${GDFDL_BRANCH}.remote" "${GDFDL_OLDREMOTE}"
+		"${GDFDL_ENTRYWRAPPER}" chroot git --git-dir="${GDFDL_DIR}/.git" --work-tree="${GDFDL_DIR}" config "branch.${GDFDL_BRANCH}.merge" "refs/heads/${GDFDL_BRANCH}"
 	fi
 
 	# use normal GDFDL functions to update build environment

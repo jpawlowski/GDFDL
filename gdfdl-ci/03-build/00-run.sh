@@ -21,6 +21,8 @@ SELF="`readlink -f $0`"
 GDFDL_BASEDIR_CI_STEP="`dirname ${SELF}`"
 GDFDL_BASEDIR_CI="`dirname ${GDFDL_BASEDIR_CI_STEP}`"
 GDFDL_BASEDIR="`dirname ${GDFDL_BASEDIR_CI}`"
+source "${GDFDL_BASEDIR}/gdfdl.conf"
+[ -f "${GDFDL_BASEDIR}/gdfdl-custom.conf" ] && source "${GDFDL_BASEDIR}/gdfdl-custom.conf"
 GDFDL_ENTRYWRAPPER="`find "${GDFDL_BASEDIR}/.ci" -maxdepth 1 -name '*.sh'`"
 
 # If we find another script named '01-run.sh', start this instead.
