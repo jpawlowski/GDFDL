@@ -25,14 +25,28 @@ set -e
 # It will be included here automatically.
 ##
 
-echo -e "Preparing for 1st start ...\n"
+case "$1" in
+	start)
+		echo -e "Preparing for 1st start ...\n"
 
-# Update login screen texts
-[ -f /etc/init.d/gdfdl-custom-prompt ] && mv -f /etc/init.d/gdfdl-custom-prompt /etc/init.d/gdfdl-prompt
-sed -i 's/##GDFDL_BRANDNAME##/${GDFDL_BRANDNAME^^}/' /etc/init.d/gdfdl-prompt
-sed -i 's/##GDFDL_BRANDINFO##/${GDFDL_BRANDINFO}/' /etc/init.d/gdfdl-prompt
+		# Update login screen texts
+		[ -f /etc/init.d/gdfdl-custom-prompt ] && mv -f /etc/init.d/gdfdl-custom-prompt /etc/init.d/gdfdl-prompt
+		sed -i 's/##GDFDL_BRANDNAME##/${GDFDL_BRANDNAME^^}/' /etc/init.d/gdfdl-prompt
+		sed -i 's/##GDFDL_BRANDINFO##/${GDFDL_BRANDINFO}/' /etc/init.d/gdfdl-prompt
 
-# self destruction
-#
-rm -rf /gdfdl.conf
-rm -rf /etc/init.d/gdfdl-init; update-rc.d gdfdl-init remove
+		# self destruction
+		#
+		rm -rf /gdfdl.conf
+		rm -rf /etc/init.d/gdfdl-init; update-rc.d gdfdl-init remove
+		;;
+
+	stop)
+		# nothing to do
+		;;
+
+	*)
+		echo "Undefined usage."
+		exit 3
+		;;
+
+esac
