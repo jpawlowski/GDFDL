@@ -31,13 +31,15 @@ function gdfdl_config_restore () {
 #
 function gdfdl_set_debianlive_version () {
 	if [[
-		"${GDFDL_BASEDISTRIBUTION}" == "squeeze"
+		"${GDFDL_BASEDISTRIBUTION}" == "squeeze" ||
+		"${GDFDL_BASEDISTRIBUTION}" == "artax"
 		]]; then
 		GDFDL_DEBIANLIVE_VERSION="v2"
 		return 0
 	elif [[
 		"${GDFDL_BASEDISTRIBUTION}" == "wheezy" ||
-		"${GDFDL_BASEDISTRIBUTION}" == "precise"
+		"${GDFDL_BASEDISTRIBUTION}" == "precise" ||
+		"${GDFDL_BASEDISTRIBUTION}" == "baureo"
 		 ]]; then
  		GDFDL_DEBIANLIVE_VERSION="v3"
  		return 0
@@ -61,6 +63,12 @@ function gdfdl_set_debianlive_basedistribution () {
 		"${GDFDL_BASEDISTRIBUTION}" == "precise"
 		 ]]; then
  		GDFDL_DEBIANLIVE_BASE="ubuntu"
+		return 0
+	elif [[
+		"${GDFDL_BASEDISTRIBUTION}" == "artax" ||
+		"${GDFDL_BASEDISTRIBUTION}" == "baureo"
+		 ]]; then
+ 		GDFDL_DEBIANLIVE_BASE="progress"
 		return 0
 	else
 		echo "ERROR: Unsupported distribution. Aborting ..."
