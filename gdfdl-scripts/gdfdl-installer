@@ -50,7 +50,7 @@ else
 		CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL "${GDFDL_CONF_URL_CUSTOM}" > gdfdl-custom.conf
 		source gdfdl-custom.conf && rm gdfdl-custom.conf
 	else
-		echo -e "Note: No customer configuration loaded."
+		echo -e "Note: No custom configuration loaded."
 	fi
 
 	if [[ "`CURLOPT_SSL_VERIFYPEER=true ${BIN_CURL} -sL -w "%{http_code}" "${GDFDL_FUNCTIONS_URL}" -o /dev/null`" == "200"  ]]
