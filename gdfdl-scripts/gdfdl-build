@@ -83,6 +83,15 @@ then
 		--mode ${GDFDL_DEBIANLIVE_BASE} \
 	2>&1 >>./${FILENAME}.log
 
+elif [[ "${GDFDL_DEBIANLIVE_BASE}" == "progress" ]]
+then
+
+	lb config \
+		--distribution ${GDFDL_BASEDISTRIBUTION} \
+		--archive-areas "main contrib non-free" \
+		--mode ${GDFDL_DEBIANLIVE_BASE} \
+	2>&1 >>./${FILENAME}.log
+
 else
 	echo "ERROR: Unsupported base distribution '${GDFDL_DEBIANLIVE_BASE}'. Aborting ..."
 	exit 1
