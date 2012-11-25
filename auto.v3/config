@@ -14,10 +14,14 @@
 ##
 
 SELF="`readlink -f $0`"
+GDFDL_BASEDIR_AUTO="`dirname ${SELF}`"
 
-if [ -f `dirname ${SELF}`/config-custom ];
+source "${GDFDL_BASEDIR_AUTO}"/../gdfdl.conf
+[ -f "${GDFDL_BASEDIR_AUTO}"/../gdfdl-custom.conf ] && source "${GDFDL_BASEDIR_AUTO}"/../gdfdl-custom.conf
+
+if [ -f "${GDFDL_BASEDIR_AUTO}"/config-custom ];
 then
-	. `dirname ${SELF}`/config-custom
+	. "${GDFDL_BASEDIR_AUTO}"/config-custom
 else
 	lb config noauto \
 		--apt apt \
