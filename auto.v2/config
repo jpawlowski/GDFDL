@@ -21,7 +21,7 @@ source "${GDFDL_BASEDIR_AUTO}/../gdfdl.conf"
 
 if [ -f "${GDFDL_BASEDIR_AUTO}/config-custom" ];
 then
-	. "${GDFDL_BASEDIR_AUTO}/config-custom""
+	. "${GDFDL_BASEDIR_AUTO}/config-custom"
 else
 	lb config noauto \
 		--apt apt \
