@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # GDFDL - A Development Framework for Debian live-build
 # live-build auto config script
