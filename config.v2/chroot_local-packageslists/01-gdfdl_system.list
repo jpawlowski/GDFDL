@@ -11,7 +11,7 @@
 ###
 
 # system software
-isc-dhcp-client isc-dhcp-common locales debconf-utils syslog-ng console-data
+isc-dhcp-client isc-dhcp-common locales debconf-utils syslog-ng console-common
 
 # basic software
 vim keyboard-configuration man
