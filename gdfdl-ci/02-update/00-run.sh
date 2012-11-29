@@ -70,7 +70,7 @@ if [[ -f "${GDFDL_ENTRYWRAPPER}" ]];
 	fi
 
 	# use normal GDFDL functions to update build environment
-	"${GDFDL_ENTRYWRAPPER}" update
+	"${GDFDL_ENTRYWRAPPER}" update --force
 	"${GDFDL_ENTRYWRAPPER}" update --forceconfig
 else
 	echo "CI - ERROR: No existing build environment installation found. Run installer first."
