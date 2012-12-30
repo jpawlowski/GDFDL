@@ -125,12 +125,14 @@ else
 fi
 
 # if there is a new ISO image, move and rename it
-if [ -f binary-hybrid.iso ];
+ISO_FILE=`find . -maxdepth 1 -name *.iso`
+
+if [[ x"${ISO_FILE}" != x"" ]];
 then
 	[[ x"$1" != x"--quiet" ]] && echo "ok"
 	[[ x"$1" != x"--quiet" ]] && echo -n "Moving files to deployment directory and updating symlinks ... "
 	[ ! -d /iso ] && mkdir /iso
-	mv binary-hybrid.iso /iso/${FILENAME}.iso
+	mv ${ISO_FILE} /iso/${FILENAME}.iso
 	mv ${FILENAME}.log /iso/${FILENAME}.log
 	ln -snf ${FILENAME}.log /iso/${GDFDL_FILE_PREFIX}_latest.log
 	ln -snf ${FILENAME}.iso /iso/${GDFDL_FILE_PREFIX}_latest.iso
