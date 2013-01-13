@@ -125,7 +125,7 @@ then
 	GDFDL_INSTALLBASEDIST="squeeze"
 elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v3" ]]
 then
-	GDFDL_INSTALLBASEDIST="wheezy"
+	GDFDL_INSTALLBASEDIST="sid"
 else
 	echo "ERROR: Unsupported Debian Live version. Aborting ..."
 	rm -rf `basename $0`
