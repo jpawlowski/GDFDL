@@ -25,5 +25,7 @@ echo -e "\n###########################################################
 echo -e "GDFDL: Enabling system services ...\n"
 [ -f /etc/init.d/gdfdl-custom-prompt ] && mv -f /etc/init.d/gdfdl-custom-prompt /etc/init.d/gdfdl-prompt
 [ -f /etc/init.d/gdfdl-custom-init ] && update-rc.d gdfdl-custom-init defaults 2>&1
-update-rc.d gdfdl-init defaults 2>&1
-update-rc.d gdfdl-prompt defaults 2>&1
+[ -f /etc/init.d/gdfdl-init ] && update-rc.d gdfdl-init defaults 2>&1
+[ -f /etc/init.d/gdfdl-prompt ] && update-rc.d gdfdl-prompt defaults 2>&1
+
+exit 0
