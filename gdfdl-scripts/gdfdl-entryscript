@@ -87,7 +87,7 @@ then
 	# we trick a bit here to allow uninstall via sudo for non-root
 	# users without allowing additional commands
 	${BIN_CHROOT} ${GDFDL_BASEDIR} chmod 777 /
-	${BIN_CHROOT} ${GDFDL_BASEDIR} chmod -R 777 ${GDFDL_DIR} /iso
+	${BIN_CHROOT} ${GDFDL_BASEDIR} chmod -R 777 ${GDFDL_DIR} /iso /run
 	${BIN_CHROOT} ${GDFDL_BASEDIR} rm -rf /*
 	rm -rf ${GDFDL_BASEDIR} ${0}
 	echo "ok"
