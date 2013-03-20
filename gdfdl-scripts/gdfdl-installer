@@ -209,6 +209,9 @@ echo "${GDFDL_BRANCH}" | ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" tee "/${GDFDL_BRAND
 ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" mkdir /iso
 ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" chmod 775 /iso
 
+${BIN_CHROOT} "${GDFDL_INSTALLDIR}" rm -f /etc/mtab
+${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -s /proc/mounts /etc/mtab
+
 # Take over timezone settings from host machine
 #
 if [ -f /etc/timezone ]; then
