@@ -27,7 +27,6 @@ echo ${TIMEZONE} > /etc/timezone
 cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
 
 echo -e "GDFDL: Set locale settings ...\n"
-echo "LANG=en_US.UTF-8" > /etc/locale
 echo "de_DE ISO-8859-1" > /etc/locale.gen
 echo "de_DE.UTF-8 UTF-8" >> /etc/locale.gen
 echo "de_DE@euro ISO-8859-15" >> /etc/locale.gen
@@ -35,6 +34,7 @@ echo "en_US ISO-8859-1" >> /etc/locale.gen
 echo "en_US.ISO-8859-15 ISO-8859-15" >> /etc/locale.gen
 echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
 locale-gen 2>&1 >/dev/null
+update-locale LANG=en_US.UTF-8 LANGUAGE
 
 echo -e "GDFDL: Correcting file permissions ...\n"
 chmod 0440 /etc/sudoers.d/*
