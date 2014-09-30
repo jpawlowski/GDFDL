@@ -25,7 +25,7 @@ source "${GDFDL_BASEDIR}/gdfdl.conf"
 
 if [[ x"${GIT_BRANCH}" != x"" ]]
 	then
-	GDFDL_BRANCH="${GIT_BRANCH}"
+	GDFDL_BRANCH="${GIT_BRANCH##*/}"
 else
 	GDFDL_BRANCH="`cd "${GDFDL_BASEDIR}"; git branch | cut -d " " -f 2`"
 fi
