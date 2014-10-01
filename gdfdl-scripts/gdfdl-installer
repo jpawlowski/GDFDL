@@ -9,6 +9,8 @@
 
 set -e
 
+umask 022
+
 # Set variables
 #
 [[ x$1 != x"" ]] && GDFDL_BRANCH=$1 || exit 1
