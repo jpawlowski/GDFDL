@@ -9,6 +9,8 @@
 
 set -e
 
+umask 022
+
 BIN_CHROOT="/usr/sbin/chroot"
 BIN_MOUNT="/bin/mount"
 BIN_UMOUNT="/bin/umount"
