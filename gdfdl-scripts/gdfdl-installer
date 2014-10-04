@@ -159,6 +159,7 @@ ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" apt-get -y --force-yes install -qq \
 	locales \
 	git \
 	md5deep \
+  apt-transport-https \
 		2>&1 >/dev/null
 
 # Install GDFDL into chroot environment
