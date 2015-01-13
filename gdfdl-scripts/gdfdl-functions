@@ -38,15 +38,11 @@ function gdfdl_set_debianlive_version () {
 		return 0
 	elif [[
 		"${GDFDL_BASEDISTRIBUTION}" == "wheezy" ||
+		"${GDFDL_BASEDISTRIBUTION}" == "jessie" ||
 		"${GDFDL_BASEDISTRIBUTION}" == "precise" ||
 		"${GDFDL_BASEDISTRIBUTION}" == "baureo"
 		 ]]; then
  		GDFDL_DEBIANLIVE_VERSION="v3"
- 		return 0
-	elif [[
-		"${GDFDL_BASEDISTRIBUTION}" == "jessie"
-		 ]]; then
- 		GDFDL_DEBIANLIVE_VERSION="v4"
  		return 0
 	else
 		echo "ERROR: Unsupported distribution. Aborting ..."
