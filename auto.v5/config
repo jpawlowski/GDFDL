@@ -1,0 +1,44 @@
+#!/bin/bash
+#
+# GDFDL - A Development Framework for Debian live-build
+# live-build auto config script
+#
+# Copyright (c) 2012-2013, Julian Pawlowski <jp@jps-networks.eu>
+# See LICENSE.GDFDL file for details.
+#
+
+##
+# Don't change this file directly.
+# Add your custom tasks in separate file called 'config-custom'
+# It will be included here automatically.
+##
+
+SELF="`readlink -f $0`"
+GDFDL_BASEDIR_AUTO="`dirname ${SELF}`"
+
+source "${GDFDL_BASEDIR_AUTO}/../gdfdl.conf"
+[ -f "${GDFDL_BASEDIR_AUTO}/../gdfdl-custom.conf" ] && source "${GDFDL_BASEDIR_AUTO}/../gdfdl-custom.conf"
+
+if [ -f "${GDFDL_BASEDIR_AUTO}/config-custom" ];
+then
+	. "${GDFDL_BASEDIR_AUTO}/config-custom"
+else
+	lb config noauto \
+ 	 --apt-indices false \
+	 --apt-recommends false \
+	 --architecture amd64 \
+	 --archive-areas "main contrib non-free" \
+	 --chroot-filesystem squashfs \
+	 --debian-installer-distribution daily \
+	 --debian-installer live \
+	 --distribution jessie \
+	 --iso-application "Debian Live" \
+	 --iso-preparer "Git Development Framework for Debian live-build" \
+	 --iso-volume "GDFDL" \
+	 --memtest none \
+	 --mirror-bootstrap http://http.debian.net/debian \
+	 --mirror-binary http://http.debian.net/debian \
+	 --mode debian \
+	 --win32-loader disabled \
+	 "${@}"
+fi

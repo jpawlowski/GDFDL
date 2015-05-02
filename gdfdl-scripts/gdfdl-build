@@ -114,6 +114,11 @@ elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v4" ]]
 	echo ${BUILDNAME} > ${GDFDL_DIR}/config.v4/includes.chroot/etc/gdfdl_build
 	cp -f /conf ${GDFDL_DIR}/config.v4/includes.chroot/gdfdl.conf
 	[ -f /conf-custom ] && cp -f /conf-custom ${GDFDL_DIR}/config.v4/includes.chroot/gdfdl-custom.conf
+elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v5" ]]
+	then
+	echo ${BUILDNAME} > ${GDFDL_DIR}/config.v5/includes.chroot/etc/gdfdl_build
+	cp -f /conf ${GDFDL_DIR}/config.v5/includes.chroot/gdfdl.conf
+	[ -f /conf-custom ] && cp -f /conf-custom ${GDFDL_DIR}/config.v5/includes.chroot/gdfdl-custom.conf
 else
 	echo "ERROR: Undefined Debain Live version. Aborting ..."
 	exit 1

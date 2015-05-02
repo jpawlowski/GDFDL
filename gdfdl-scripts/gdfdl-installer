@@ -127,8 +127,11 @@ then
 	GDFDL_INSTALLBASEDIST="squeeze"
 elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v3" ]]
 then
-	GDFDL_INSTALLBASEDIST="jessie"
+	GDFDL_INSTALLBASEDIST="wheezy"
 elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v4" ]]
+then
+	GDFDL_INSTALLBASEDIST="jessie"
+elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v5" ]]
 then
 	GDFDL_INSTALLBASEDIST="stretch"
 else
