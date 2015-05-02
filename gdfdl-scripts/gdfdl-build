@@ -109,6 +109,11 @@ elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v3" ]]
 	echo ${BUILDNAME} > ${GDFDL_DIR}/config.v3/includes.chroot/etc/gdfdl_build
 	cp -f /conf ${GDFDL_DIR}/config.v3/includes.chroot/gdfdl.conf
 	[ -f /conf-custom ] && cp -f /conf-custom ${GDFDL_DIR}/config.v3/includes.chroot/gdfdl-custom.conf
+elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v4" ]]
+	then
+	echo ${BUILDNAME} > ${GDFDL_DIR}/config.v4/includes.chroot/etc/gdfdl_build
+	cp -f /conf ${GDFDL_DIR}/config.v4/includes.chroot/gdfdl.conf
+	[ -f /conf-custom ] && cp -f /conf-custom ${GDFDL_DIR}/config.v4/includes.chroot/gdfdl-custom.conf
 else
 	echo "ERROR: Undefined Debain Live version. Aborting ..."
 	exit 1
@@ -134,8 +139,6 @@ then
 	[ ! -d /iso ] && mkdir /iso
 	mv ${ISO_FILE} /iso/${FILENAME}.iso
 	mv ${FILENAME}.log /iso/${FILENAME}.log
-	ln -snf ${FILENAME}.log /iso/${GDFDL_FILE_PREFIX}_latest.log
-	ln -snf ${FILENAME}.iso /iso/${GDFDL_FILE_PREFIX}_latest.iso
 	[[ x"$1" != x"--quiet" ]] && echo "ok"
 
 	rm -rf /iso/*.sign /iso/MD5SUMS /iso/SHA1SUMS /iso/SHA256SUMS
