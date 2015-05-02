@@ -1,0 +1,40 @@
+#! /bin/bash
+### BEGIN INIT INFO
+# Provides:          gdfdl-prompt
+# Required-Start:    $local_fs $all
+# Required-Stop:     
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: GDFDL Login screen
+# Description:       
+### END INIT INFO
+
+##
+# Don't change this file directly.
+# Instead take a copy called 'gdfdl-custom-prompt'.
+# If that file is present it will replace this one automatically.
+##
+
+IPS="`/bin/hostname -I`"
+FQDN="`/bin/hostname -f`"
+GDFDL_BUILDNAME="`cat /etc/gdfdl_build`"
+
+echo "
+     ##GDFDL_BRANDNAME##
+
+     Build: ${GDFDL_BUILDNAME}
+     Console: \l
+    -------------------------------------------------------------
+
+     This host and it's services can be reached
+     by the following name and IP addresses:
+" > /etc/issue
+
+for ADDRESS in ${FQDN} ${IPS}
+do
+	[[ ${ADDRESS} =~ ":" ]] && ADDRESS="["${ADDRESS}"]" 
+	echo "     ${ADDRESS}" >> /etc/issue
+done
+
+echo "
+##GDFDL_BRANDINFO##" >> /etc/issue

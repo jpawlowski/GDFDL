@@ -1,0 +1,19 @@
+#
+# GDFDL - A Development Framework for Debian live-build
+# System packages
+#
+# Copyright (c) 2012-2013, Julian Pawlowski <jp@jps-networks.eu>
+# See LICENSE.GDFDL file for details.
+#
+
+###
+# Don't change this file directly. Create separate file with sort order after this file instead.
+###
+
+# system software
+isc-dhcp-client isc-dhcp-common locales debconf-utils syslog-ng console-common console-setup console-data user-setup sudo apt-transport-https
+
+# basic software
+vim keyboard-configuration man
+
+# basic services
