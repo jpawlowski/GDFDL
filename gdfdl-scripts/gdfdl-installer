@@ -199,6 +199,14 @@ elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v3" ]]
 then
 	${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf auto.v3 "${GDFDL_DIR}/auto"
 	${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf config.v3 "${GDFDL_DIR}/config"
+elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v4" ]]
+then
+	${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf auto.v4 "${GDFDL_DIR}/auto"
+	${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf config.v4 "${GDFDL_DIR}/config"
+elif [[ "${GDFDL_DEBIANLIVE_VERSION}" == "v5" ]]
+then
+	${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf auto.v5 "${GDFDL_DIR}/auto"
+	${BIN_CHROOT} "${GDFDL_INSTALLDIR}" ln -snf config.v5 "${GDFDL_DIR}/config"
 fi
 
 # Adjusting environment settings
