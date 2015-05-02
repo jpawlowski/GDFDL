@@ -161,7 +161,6 @@ ${BIN_CHROOT} "${GDFDL_INSTALLDIR}" apt-get -y --force-yes install -qq \
 	uuid-runtime \
 	win32-loader \
 	syslinux \
-	syslinux-themes-debian \
 	locales \
 	git \
 	md5deep \
